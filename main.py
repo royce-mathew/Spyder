@@ -55,8 +55,9 @@ async def on_raw_reaction_add(payload):
         guild = discord.utils.find(lambda g : g.id == guild_id, client.guilds)
         role = discord.utils.find(lambda r : r.name == payload.emoji.name.title(), guild.roles)
         if role is not None:
-            member = discord.utils.find(lambda m : m.id == payload.user_id, guild.members)
-            await member.add_roles(role, reason="Spyder Reaction Roles")
+            member = payload.member # discord.utils.find(lambda m : m.id == payload.user_id, guild.members)
+            print(role)
+            await member.add_roles(role, reason="Spyder Reaction Roles", atomic=True)
             print(f"Added role {role.name} to {member.name}")
 
 # Remove reaction Event
@@ -68,8 +69,8 @@ async def on_raw_reaction_remove(payload):
         guild = discord.utils.find(lambda g : g.id == guild_id, client.guilds)
         role = discord.utils.find(lambda r: r.name == payload.emoji.name.title(), guild.roles)
         if role is not None:
-            member = discord.utils.find(lambda m : m.id == payload.user_id, guild.members)
-            await member.remove_roles(role, reason="Spyder Reaction Roles")
+            member = payload.member # discord.utils.find(lambda m : m.id == payload.user_id, guild.members)
+            await member.remove_roles(role, reason="Spyder Reaction Roles", atomic=True)
             print(f"Removed role {role.name} from {member.name}")
 
 
