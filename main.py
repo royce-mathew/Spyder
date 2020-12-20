@@ -15,7 +15,8 @@ maincolor = 0x000
 import discord, os
 # We import commands and tasks from discord ext
 from discord.ext import commands #, tasks
-
+# Declare intents
+intents = discord.Intents.all()
 
 #     _____  _  _               _   
 #    /  __ \| |(_)             | |  
@@ -27,10 +28,9 @@ from discord.ext import commands #, tasks
 
 
 # Create a client
-client = commands.Bot(command_prefix="/", case_insensitive=True)
+client = commands.Bot(command_prefix="/", case_insensitive=True, intents=intents)
 # Remove the help command so we can send a custom help command
 client.remove_command('help')
-
 
 #     _____                    _        
 #    |  ___|                  | |       
@@ -53,12 +53,12 @@ async def on_raw_reaction_add(payload):
     if msgid == 789644217634127883:
         guild_id = payload.guild_id
         guild = discord.utils.find(lambda g : g.id == guild_id, client.guilds)
-        role = discord.utils.find(lambda r : r.name == payload.emoji.name.title(), guild.roles)
+        role = discord.utils.find(lambda r : r.name == payload.emoji.name, guild.roles)
         if role is not None:
-            member = payload.member # discord.utils.find(lambda m : m.id == payload.user_id, guild.members)
-            print(role)
-            await member.add_roles(role, reason="Spyder Reaction Roles", atomic=True)
+            member = discord.utils.find(lambda m : m.id == payload.user_id, guild.members) # payload.member
+            await member.add_roles(role, reason="Spyder Reaction Roles")
             print(f"Added role {role.name} to {member.name}")
+            return
 
 # Remove reaction Event
 @client.event
@@ -67,11 +67,12 @@ async def on_raw_reaction_remove(payload):
     if msgid == 789644217634127883:
         guild_id = payload.guild_id
         guild = discord.utils.find(lambda g : g.id == guild_id, client.guilds)
-        role = discord.utils.find(lambda r: r.name == payload.emoji.name.title(), guild.roles)
+        role = discord.utils.find(lambda r: r.name == payload.emoji.name, guild.roles)
         if role is not None:
-            member = payload.member # discord.utils.find(lambda m : m.id == payload.user_id, guild.members)
-            await member.remove_roles(role, reason="Spyder Reaction Roles", atomic=True)
+            member = discord.utils.find(lambda m : m.id == payload.user_id, guild.members)
+            await member.remove_roles(role, reason="Spyder Reaction Roles")
             print(f"Removed role {role.name} from {member.name}")
+            return
 
 
 #    
