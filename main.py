@@ -14,7 +14,7 @@ maincolor = 0x000
 #
 import discord, os
 # We import commands and tasks from discord ext
-from discord.ext import commands #, tasks
+from discord.ext import commands
 # Declare intents
 intents = discord.Intents.all()
 
