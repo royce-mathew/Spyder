@@ -22,6 +22,7 @@
     <list default="true" id="198e931e-9b88-4b82-bbfc-a7a9d81a69ca" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/Spyder.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Spyder.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
