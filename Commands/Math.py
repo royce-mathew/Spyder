@@ -8,7 +8,7 @@ class Math(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.command(name = "getFactor", description = "Give three numbers seperated by spaces to get the factor of a trinomial")
+    @commands.command(name="GetFactor", description="Give three numbers seperated by spaces to get the factor of a trinomial")
     async def getFactor(self, ctx, arg0, arg1, arg2):
         try:
             # Convert args to int
