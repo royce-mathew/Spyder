@@ -4,7 +4,7 @@ from discord.ext import tasks, commands
 # Import time for time stat
 import datetime
 from pytz import timezone
-from main import maincolor, stats_message_id
+from main import maincolor, stats_message_id, stats_channel_id, guild_id
 
 
 # Covid Stats
@@ -15,15 +15,15 @@ import requests
 text_list = ["Currently Infected", "Mild Condition", "Serious or Critical",
              "Cases with Outcome", "Recovered/Discharged", "Deaths"]
 
-# The numbers list will keep data which will correspond to indexes in the text_list
-numbers = []
-
 class Stats(commands.Cog):
 
     # The first thing that happens when this class is called
     def __init__(self, client):
         self.client = client
         self.stat.start()
+
+    def cog_unload(self):
+        self.stat.cancel()
 
     # Ping command - Tells the ping of the bot
     @commands.command(name="Ping", description="Ping")
@@ -36,7 +36,7 @@ class Stats(commands.Cog):
 
     # Give the time - Updates the time every minute
     @tasks.loop(minutes=1)
-    async def stat(self, ctx):
+    async def stat(self):
         # Get current time
         source_date = datetime.datetime.now()
         source = timezone("Canada/Eastern").localize(source_date)
@@ -51,8 +51,8 @@ class Stats(commands.Cog):
         embed = discord.Embed(
             title="Server Status",
             description="Members: {}\nhttps://discord.gg/ZCvcu36\nRegion: {}\n\n**Server Time**".format(
-                ctx.guild.member_count,
-                ctx.guild.region),
+                self.guild.member_count,
+                self.guild.region),
             color=maincolor
         )
 
@@ -65,28 +65,31 @@ class Stats(commands.Cog):
                 inline=True
             )
 
-        # Get the message with massage id
-        msg = await ctx.fetch_message(stats_message_id)
+        # Get the message with message id
+        msg = await self.stat_channel.fetch_message(stats_message_id)
         # edit the message
         await msg.edit(embed=embed)
 
-
     # Wait until bot is ready
     @stat.before_loop
-    async def before_stat(self, ctx):
+    async def before_stat(self):
+        # Wait until the client is ready before starting the loop
         await self.client.wait_until_ready()
 
+        # Set here because these lines can onlt be run after the client is ready
+        self.guild = self.client.get_guild(guild_id)
+        self.stat_channel = self.client.get_channel(stats_channel_id)
 
     @commands.command(name="CovidStats", description="Give the covid statistics")
     async def covidstats(self, ctx):
         page = requests.get("https://www.worldometers.info/coronavirus/coronavirus-cases/")
         tree = html.fromstring(page.content)
 
+        # The numbers list will keep data which will correspond to indexes in the text_list
         numbers = [elem.text for elem in tree.xpath('//div[@class="number-table"]')]
 
         embed = discord.Embed(
             title="Covid Stats",
-            description="",
             color=maincolor
         )
 

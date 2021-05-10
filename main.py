@@ -1,6 +1,8 @@
 # Variables
 maincolor = 0x000
+guild_id = 572487931327938593
 stats_message_id = 836999076167548998
+stats_channel_id = 836647371588239363
 
 #     _____                                _        
 #    |_   _|                              | |       
