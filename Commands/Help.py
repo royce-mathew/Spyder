@@ -11,12 +11,9 @@ class Help(commands.Cog):
 
     @commands.command(name="Help", description="Returns all the available commmands")
     async def help(self, ctx):
-        #author = ctx.message.author
-        #Guild = ctx.message.guild or self.client.get_guild(572487931327938593) or self.client.fetch_guild(572487931327938593)
-        
         # If there is a guild it is in
         embed = discord.Embed(
-            colour = 0x000
+            colour=0x000
         )
         embed.title = "**Help Command**"
         embed.description = f"These are the avaliable commands for **{ctx.message.guild.name}**\nThe client prefix is: `/`"

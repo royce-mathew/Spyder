@@ -65,44 +65,11 @@ class Stats(commands.Cog):
                 inline=True
             )
 
-        """
-        # Timezones
-        us_central = source.astimezone(timezone("US/Central")).strftime("%I:%M %p")
-        us_pacific = source.astimezone(timezone("US/Pacific")).strftime("%I:%M %p")
-        canada_east = source.astimezone(timezone("Canada/Eastern")).strftime("%I:%M %p")
-        india_calcutta = source.astimezone(timezone("Asia/Calcutta")).strftime("%I:%M %p")
-        turkey = source.astimezone(timezone("Turkey")).strftime("%I:%M %p")
-        EST = source.astimezone(timezone("EST")).strftime("%I:%M %p")
-        UTC = source.astimezone(timezone("UTC")).strftime("%I:%M %p")
-
-        
-
-        # Add Fields to Embed
-        embed.add_field(name="US/Central", value="```{}```".format(us_central), inline=True)
-        embed.add_field(name="US/Pacific", value="```{}```".format(us_pacific), inline=True)
-        embed.add_field(name="India", value="```{}```".format(india_calcutta), inline=True)
-        embed.add_field(name="Turkey", value="```{}```".format(turkey), inline=True)
-        embed.add_field(name="Canada/East", value="```{}```".format(canada_east), inline=True)
-        embed.add_field(name="EST", value="```{}```".format(EST), inline=True)
-        embed.add_field(name="UTC", value="```{}```".format(UTC), inline=True)
-
-        """
         # Get the message with massage id
         msg = await ctx.fetch_message(stats_message_id)
-        
         # edit the message
         await msg.edit(embed=embed)
-        
-        # Error checking by printing
-        """print("hawaii:",hawaii,
-              "\nus_east:", us_east,
-              "\nus_alaska:",us_alaska,
-              "\nus_central:", us_central,
-              "\nus_pacific:",us_pacific,
-              "\nindia:", india,
-              "\nEST:", EST,
-              "\nUTC:", UTC)
-        """
+
 
     # Wait until bot is ready
     @stat.before_loop
