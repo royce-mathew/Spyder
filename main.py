@@ -1,5 +1,6 @@
 # Variables
 maincolor = 0x000
+prefix = "!"
 guild_id = 572487931327938593
 stats_message_id = 836999076167548998
 stats_channel_id = 836647371588239363
@@ -35,7 +36,7 @@ intents = discord.Intents.all()
 
 
 # Create a client
-client = commands.Bot(command_prefix="/", case_insensitive=True, intents=intents)
+client = commands.Bot(command_prefix=prefix, case_insensitive=True, intents=intents)
 # Remove the help command so we can send a custom help command
 client.remove_command('help')
 
