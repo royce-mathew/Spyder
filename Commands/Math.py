@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import traceback
 
 command_format = "\n\nPlease check your format:\n\t- Are the values formatted in (a b c) and not (a + b + c)?\n\t- Are the values seperated by spaces?\n\t- Are there actual numbers?\n\t- Are (a b c) coefficients of the quadratic?\n\t- Is a an actual value?"
 
@@ -35,8 +36,12 @@ class Math(commands.Cog):
                 the loop goes from smallest_num to biggest_num - 1
             
             """
+            print("a_n: {}, m_n: {}".format(add_num, mult_num))
+            print( "s_n: {}, b_n: {}".format(smallest_num, biggest_num))
             for i in range(smallest_num, biggest_num + 1):
-                for x in range(biggest_num, i + 1, -1):
+                print(i)
+                for x in range(biggest_num, i - 1, -1):
+                    print("\t", x)
                     if i+x == add_num and i*x == mult_num:
                         if a != 1:
                             await ctx.send("`{}x^2` + `{}x` + `{}x` + `{}`".format(a, i, x, c))
@@ -47,7 +52,8 @@ class Math(commands.Cog):
             await ctx.send("The passed values cannot be factored."+command_format)
 
 
-        except Exception:
+        except Exception as e:
+            traceback.print_exc()
             await ctx.send(command_format)
         
 
