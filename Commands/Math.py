@@ -36,12 +36,12 @@ class Math(commands.Cog):
                 the loop goes from smallest_num to biggest_num - 1
             
             """
-            print("a_n: {}, m_n: {}".format(add_num, mult_num))
-            print( "s_n: {}, b_n: {}".format(smallest_num, biggest_num))
+            #print("a_n: {}, m_n: {}".format(add_num, mult_num))
+            #print( "s_n: {}, b_n: {}".format(smallest_num, biggest_num))
             for i in range(smallest_num, biggest_num + 1):
-                print(i)
+                #print(i)
                 for x in range(biggest_num, i - 1, -1):
-                    print("\t", x)
+                    #print("\t", x)
                     if i+x == add_num and i*x == mult_num:
                         if a != 1:
                             await ctx.send("`{}x^2` + `{}x` + `{}x` + `{}`".format(a, i, x, c))
