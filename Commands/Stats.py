@@ -15,6 +15,9 @@ import requests
 text_list = ["Currently Infected", "Mild Condition", "Serious or Critical",
              "Cases with Outcome", "Recovered/Discharged", "Deaths"]
 
+
+embed_const = "```{}```"
+
 class Stats(commands.Cog):
 
     # The first thing that happens when this class is called
@@ -61,9 +64,17 @@ class Stats(commands.Cog):
             # Add a field in the embed
             embed.add_field(
                 name=tz,
-                value="```{}```".format(source.astimezone(timezone(tz)).strftime("%I:%M %p")),
+                value=embed_const.format(source.astimezone(timezone(tz)).strftime("%I:%M %p")),
                 inline=True
             )
+
+
+        # Add NB
+        embed.add_field(
+            name="New_Brunswick (Manual)",
+            value=embed_const.format(source.astimezone(timezone("Canada/Eastern")) + datetime.timedelta(hours=1)),
+            inline=True
+        )
 
         # Get the message with message id
         msg = await self.stat_channel.fetch_message(stats_message_id)
@@ -97,7 +108,7 @@ class Stats(commands.Cog):
         for k, v in dict(zip(text_list, numbers)).items():
             embed.add_field(
                 name=k,
-                value="```{}```".format(v),
+                value=embed_const.format(v),
                 inline=True
             )
 
