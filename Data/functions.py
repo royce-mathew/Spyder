@@ -1,7 +1,14 @@
+import discord
+import datetime
+
+maincolor = 0x000
+avatar_url = "https://cdn.discordapp.com/avatars/730171191632986234/beda4acd239d66c261541edad187e95e.webp?size=1024"
+
+
 # Checks
 def is_bot_owner(ctx):
     return ctx.message.author.id == 461509995444437003
-        
+
 
 def is_server_owner(ctx):
     return ctx.message.author == ctx.message.guild.owner
@@ -21,3 +28,14 @@ def print_settings():
     print("1. Set roles message ID")
     print("2. Set command prefix")
     return input("Enter Option: ")
+
+
+def create_embed(title, description=None):
+    embed = discord.Embed(
+        title=title,
+        description=description,
+        colour=maincolor,
+        timestamp=datetime.datetime.now()
+    )
+    embed.set_footer(text="Spyder", icon_url=avatar_url)  # , icon_url=client_array[0].user.avatar_url
+    return embed

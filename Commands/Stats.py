@@ -4,19 +4,20 @@ from discord.ext import tasks, commands
 # Import time for time stat
 import datetime
 from pytz import timezone
-from main import maincolor, stats_message_id, stats_channel_id, guild_id
-
+from main import stats_message_id, stats_channel_id, guild_id
 
 # Covid Stats
 from lxml import html
 import requests
 
+from Data.functions import create_embed
+
 # List containing all the titles that we will get the data for
 text_list = ["Currently Infected", "Mild Condition", "Serious or Critical",
              "Cases with Outcome", "Recovered/Discharged", "Deaths"]
 
-
 embed_const = "```{}```"
+
 
 class Stats(commands.Cog):
 
@@ -51,12 +52,11 @@ class Stats(commands.Cog):
         timezones.sort()
 
         # Create discord Embed
-        embed = discord.Embed(
-            title="Server Status",
-            description="Members: {}\nhttps://discord.gg/ZCvcu36\nRegion: {}\n\n**Server Time**".format(
+        embed = create_embed(
+            "Server Status",
+            "Members: {}\nhttps://discord.gg/ZCvcu36\nRegion: {}\n\n**Server Time**".format(
                 self.guild.member_count,
                 self.guild.region),
-            color=maincolor
         )
 
         # For each timezone in the timezones list
@@ -67,7 +67,6 @@ class Stats(commands.Cog):
                 value=embed_const.format(source.astimezone(timezone(tz)).strftime("%I:%M %p")),
                 inline=True
             )
-
 
         # Add NB
         embed.add_field(
@@ -99,9 +98,8 @@ class Stats(commands.Cog):
         # The numbers list will keep data which will correspond to indexes in the text_list
         numbers = [elem.text for elem in tree.xpath('//div[@class="number-table"]')]
 
-        embed = discord.Embed(
-            title="Covid Stats",
-            color=maincolor
+        embed = create_embed(
+            "Covid Stats"
         )
 
         # zip assigns a text for each number, dict makes it a dictionary, then we loop through the items

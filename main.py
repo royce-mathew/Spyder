@@ -1,5 +1,4 @@
 # Variables
-maincolor = 0x000
 prefix = "!"
 guild_id = 572487931327938593
 stats_message_id = 836999076167548998
@@ -16,9 +15,7 @@ stats_channel_id = 836647371588239363
 #
 
 import os
-# Import functions file so we can access functions globally
-import functions
-
+from Data import functions
 import discord
 # We import commands and tasks from discord ext
 from discord.ext import commands
@@ -62,8 +59,8 @@ roles_msg_id = 789644217634127883
 @client.event
 async def on_raw_reaction_add(ctx):
     if ctx.message_id == roles_msg_id:
-        guild_id = ctx.guild_id
-        guild = discord.utils.find(lambda g: g.id == guild_id, client.guilds)
+        local_guild_id = ctx.guild_id
+        guild = discord.utils.find(lambda g: g.id == local_guild_id, client.guilds)
         role = discord.utils.find(lambda r: r.name == ctx.emoji.name, guild.roles)
         if role is not None:
             member = discord.utils.find(lambda m: m.id == ctx.user_id, guild.members)  # ctx.member
@@ -77,8 +74,8 @@ async def on_raw_reaction_remove(ctx):
     # Check if the message id is the same as the roles_msg_id
     if ctx.message_id == roles_msg_id:
         # Get guild, role and then remove the role
-        guild_id = ctx.guild_id
-        guild = discord.utils.find(lambda g: g.id == guild_id, client.guilds)
+        local_guild_id = ctx.guild_id
+        guild = discord.utils.find(lambda g: g.id == local_guild_id, client.guilds)
         role = discord.utils.find(lambda r: r.name == ctx.emoji.name, guild.roles)
         if role is not None:
             member = discord.utils.find(lambda m: m.id == ctx.user_id, guild.members)
@@ -108,14 +105,11 @@ async def load(ctx, extension):
     client.load_extension(f'Commands.{extension}')
 
     # Create an embed and send it
-    embed = discord.Embed(
-        colour=maincolor
+    embed = functions.create_embed(
+        "Loaded",
+        f"Command `{extension}` has been loaded."
     )
-    embed.title = "**Loaded**"
-    embed.description = f"Command `{extension}` has been loaded."
-    embed.timestamp = ctx.message.created_at
-    embed.set_footer(text="Spyder", icon_url=client.user.avatar_url)
-    await ctx.message.channel.send(embed)
+    await ctx.send(embed)
 
 
 # Unload Command
@@ -131,14 +125,11 @@ async def unload(ctx, extension):
     client.unload_extension(f'Commands.{extension}')
 
     # Create a embed and send it
-    embed = discord.Embed(
-        colour=maincolor
+    embed = functions.create_embed(
+        "Unloaded",
+        f"Command `{extension}` has been unloaded."
     )
-    embed.title = "**Unloaded**"
-    embed.description = f"Command `{extension}` has been unloaded."
-    embed.timestamp = ctx.message.created_at
-    embed.set_footer(text="Spyder", icon_url=client.user.avatar_url)
-    await ctx.message.channel.send(embed)
+    await ctx.send(embed)
 
 
 # Reload Command
@@ -154,14 +145,11 @@ async def reload(ctx, extension):
     client.reload_extension(f'Commands.{extension}')
 
     # Make an embed and send it
-    embed = discord.Embed(
-        colour=maincolor
+    embed = functions.create_embed(
+        "Reloaded",
+        f"Command `{extension}` has been reloaded."
     )
-    embed.title = "**Reloaded**"
-    embed.description = f"Command `{extension}` has been reloaded."
-    embed.timestamp = ctx.message.created_at
-    embed.set_footer(text="Spyder", icon_url=client.user.avatar_url)
-    await ctx.message.channel.send(embed)
+    await ctx.send(embed)
 
 
 #
@@ -184,8 +172,6 @@ for filename in os.listdir("./Commands"):
         name = len(filename) - 3
         # Remove the .py extension at the end when we send the filename to load
         client.load_extension(f'Commands.{filename[0:name]}')
-
-
 
 # Run the token
 client.run("NzMwMTcxMTkxNjMyOTg2MjM0.XwuZzg.fVsgMOaq2VUaSdZXmGVDIBuqxpk")
