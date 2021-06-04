@@ -37,6 +37,7 @@ client = commands.Bot(command_prefix=prefix, case_insensitive=True, intents=inte
 # Remove the help command so we can send a custom help command
 client.remove_command('help')
 
+
 #     _____                    _
 #    |  ___|                  | |       
 #    | |__ __   __ ___  _ __  | |_  ___ 
@@ -81,6 +82,55 @@ async def on_raw_reaction_remove(ctx):
             member = discord.utils.find(lambda m: m.id == ctx.user_id, guild.members)
             await member.remove_roles(role, reason="Spyder Reaction Roles")
             print(f"Removed role {role.name} from {member.name}")
+
+
+async def convert_to_file(attach_array):
+    attachments = []
+
+    for x in attach_array:
+        file = await x.to_file()
+        index = list.index(attach_array, x)
+        attachments.insert(index, file)
+
+    return attachments
+
+
+@client.event
+async def on_message_delete(message):
+    embed = functions.create_embed(
+        "Message Deleted".format(message.author.display_name),
+        "User `{}`'s deleted their message".format(message.author.display_name)
+    )
+
+    content = ("```{}```".format(message.content) if message.content else "")
+    embed.add_field(name="Message Content", value=content, inline=True)
+    embed.add_field(name="Channel", value="```{}```".format(message.channel.name))
+    channel = discord.utils.get(message.guild.text_channels, name="chatlogs")
+
+    # Convert attachments to file
+    files = await convert_to_file(message.attachments)
+
+    await channel.send(embed=embed, files=files)
+
+
+@client.event
+async def on_message_edit(before, after):
+    embed = functions.create_embed(
+        "Message Edited".format(before.author.display_name),
+        "User `{}` edited their message".format(before.author.display_name)
+    )
+
+    bf = "```{}```".format(before.content if before.content else "None")
+    af = "```{}```".format(after.content if after.content else "None")
+    embed.add_field(name="Before", value=bf, inline=True)
+    embed.add_field(name="After", value=af, inline=True)
+    embed.add_field(name="Channel", value="```{}```".format(before.channel.name))
+    channel = discord.utils.get(before.guild.text_channels, name="chatlogs")
+
+    # Convert attachments to file
+    files = await convert_to_file(before.attachments)
+
+    await channel.send(embed=embed, files=files)
 
 
 #

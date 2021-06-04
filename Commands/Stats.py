@@ -68,10 +68,11 @@ class Stats(commands.Cog):
                 inline=True
             )
 
+        NB_time = (source.astimezone(timezone("Canada/Eastern")) + datetime.timedelta(hours=1)).strftime("%I:%M %p")
         # Add NB
         embed.add_field(
             name="New_Brunswick (Manual)",
-            value=embed_const.format(source.astimezone(timezone("Canada/Eastern")) + datetime.timedelta(hours=1)),
+            value=embed_const.format(NB_time),
             inline=True
         )
 
