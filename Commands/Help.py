@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from main import prefix
 
 from Data.functions import create_embed
 
@@ -14,7 +15,7 @@ class Help(commands.Cog):
     async def help(self, ctx):
         embed = create_embed(
             "Help Command",
-            f"These are the avaliable commands for **{ctx.message.guild.name}**\nThe client prefix is: `/`"
+            f"These are the avaliable commands for **{ctx.message.guild.name}**\nThe client prefix is: `{prefix}`"
         )
 
         for command in self.client.commands:

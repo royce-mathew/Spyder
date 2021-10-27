@@ -4,11 +4,13 @@ from discord.ext import tasks, commands
 # Import time for time stat
 import datetime
 from pytz import timezone
-from main import stats_message_id, stats_channel_id, guild_id
+from main import stats_message_id, stats_channel_id, fact_channel_id, guild_id
 
 # Covid Stats
 from lxml import html
 import requests
+
+import re  # Regex Library
 
 from Data.functions import create_embed
 
@@ -25,9 +27,11 @@ class Stats(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.stat.start()
+        self.get_fact_of_day.start()
 
     def cog_unload(self):
         self.stat.cancel()
+        self.get_fact_of_day.cancel()
 
     # Ping command - Tells the ping of the bot
     @commands.command(name="Ping", description="Ping")
@@ -68,11 +72,11 @@ class Stats(commands.Cog):
                 inline=True
             )
 
-        NB_time = (source.astimezone(timezone("Canada/Eastern")) + datetime.timedelta(hours=1)).strftime("%I:%M %p")
+        nb_time = (source.astimezone(timezone("Canada/Eastern")) + datetime.timedelta(hours=1)).strftime("%I:%M %p")
         # Add NB
         embed.add_field(
             name="New_Brunswick (Manual)",
-            value=embed_const.format(NB_time),
+            value=embed_const.format(nb_time),
             inline=True
         )
 
@@ -81,17 +85,47 @@ class Stats(commands.Cog):
         # edit the message
         await msg.edit(embed=embed)
 
-    # Wait until bot is ready
+        # Wait until bot is ready
+
     @stat.before_loop
     async def before_stat(self):
         # Wait until the client is ready before starting the loop
         await self.client.wait_until_ready()
 
-        # Set here because these lines can onlt be run after the client is ready
+        # Set here because these lines can only be run after the client is ready
         self.guild = self.client.get_guild(guild_id)
         self.stat_channel = self.client.get_channel(stats_channel_id)
 
-    @commands.command(name="CovidStats", description="Give the covid statistics")
+    @tasks.loop(minutes=1440)
+    async def get_fact_of_day(self):
+        page = requests.get("https://uselessfacts.jsph.pl/random.html?language=en")
+        tree = html.fromstring(page.content)
+        fact_elem = tree.xpath("/html/body/div/div[2]/div/blockquote")[0]
+        fact_regex = re.compile("^[\s\t]+")
+        result = re.sub(fact_regex, "", fact_elem.text)
+
+        embed = create_embed(
+            "Fact Of The Day",
+            f"```{result if result is not None else 'None'}```"
+        )
+
+        await self.fact_channel.send(embed=embed)
+
+        # Wait until bot is ready
+
+    @get_fact_of_day.before_loop
+    async def before_fod(self):
+        await self.client.wait_until_ready()
+
+        self.guild = self.client.get_guild(guild_id)
+        self.fact_channel = self.client.get_channel(fact_channel_id)
+        
+
+
+
+
+
+    @commands.command(name="CovidStats", description="Give the covid statistics", aliases=["covid", "cstats"])
     async def covidstats(self, ctx):
         page = requests.get("https://www.worldometers.info/coronavirus/coronavirus-cases/")
         tree = html.fromstring(page.content)

@@ -3,6 +3,7 @@ prefix = "!"
 guild_id = 572487931327938593
 stats_message_id = 836999076167548998
 stats_channel_id = 836647371588239363
+fact_channel_id = 902814165746450442
 
 #     _____                                _        
 #    |_   _|                              | |       
@@ -98,11 +99,12 @@ async def convert_to_file(attach_array):
 @client.event
 async def on_message_delete(message):
     embed = functions.create_embed(
-        "Message Deleted".format(message.author.display_name),
-        "User `{}`'s deleted their message".format(message.author.display_name)
+        "Message Deleted:",
+        f"User `{message.author.display_name}`'s deleted their message"
     )
 
-    content = ("```{}```".format(message.content) if message.content else "")
+
+    content = f"```{message.content if message.content else ''}```"
     embed.add_field(name="Message Content", value=content, inline=True)
     embed.add_field(name="Channel", value="```{}```".format(message.channel.name))
     channel = discord.utils.get(message.guild.text_channels, name="chatlogs")
@@ -116,15 +118,17 @@ async def on_message_delete(message):
 @client.event
 async def on_message_edit(before, after):
     embed = functions.create_embed(
-        "Message Edited".format(before.author.display_name),
-        "User `{}` edited their message".format(before.author.display_name)
+        "Message Edited",
+        f"User `{before.author.display_name}` edited their message"
     )
 
-    bf = "```{}```".format(before.content if before.content else "None")
-    af = "```{}```".format(after.content if after.content else "None")
+    # Needed or the embed messses up
+    bf = f"```{before.content if before.content else 'None'}```"
+    af = f"```{after.content if after.content else 'None'}```"
+
     embed.add_field(name="Before", value=bf, inline=True)
     embed.add_field(name="After", value=af, inline=True)
-    embed.add_field(name="Channel", value="```{}```".format(before.channel.name))
+    embed.add_field(name="Channel", value=f"```{before.channel.name}```")
     channel = discord.utils.get(before.guild.text_channels, name="chatlogs")
 
     # Convert attachments to file
