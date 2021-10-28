@@ -10,9 +10,7 @@ from main import stats_message_id, stats_channel_id, fact_channel_id, guild_id
 from lxml import html
 import requests
 
-import re  # Regex Library
-
-from Data.functions import create_embed
+from Data.functions import create_embed, get_fact
 
 # List containing all the titles that we will get the data for
 text_list = ["Currently Infected", "Mild Condition", "Serious or Critical",
@@ -98,16 +96,7 @@ class Stats(commands.Cog):
 
     @tasks.loop(minutes=1440)
     async def get_fact_of_day(self):
-        page = requests.get("https://uselessfacts.jsph.pl/random.html?language=en")
-        tree = html.fromstring(page.content)
-        fact_elem = tree.xpath("/html/body/div/div[2]/div/blockquote")[0]
-        fact_regex = re.compile("^[\s\t]+")
-        result = re.sub(fact_regex, "", fact_elem.text)
-
-        embed = create_embed(
-            "Fact Of The Day",
-            f"```{result if result is not None else 'None'}```"
-        )
+        embed = create_embed("Fact of the Day", f"```{get_fact()}```")
 
         await self.fact_channel.send(embed=embed)
 
