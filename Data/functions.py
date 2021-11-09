@@ -5,6 +5,8 @@ import requests
 import re  # Regex
 from lxml import html
 
+import json
+
 maincolor = 0x000
 avatar_url = "https://cdn.discordapp.com/avatars/730171191632986234/beda4acd239d66c261541edad187e95e.webp?size=1024"
 
@@ -53,3 +55,45 @@ def create_embed(title, description=None):
     )
     embed.set_footer(text="Spyder", icon_url=avatar_url)  # , icon_url=client_array[0].user.avatar_url
     return embed
+
+
+def get_main_array(user_id):
+    with open("Data/userdata.json", "r") as file:
+        main_array = json.load(file)
+        return main_array.get(str(user_id), None)
+
+
+def create_main_array(user_id, value=None):
+    with open("Data/userdata.json", "r+") as file:
+        main_array = json.load(file)
+
+        if value is None:
+            main_array[str(user_id)] = {}  # Create a new array for that user
+        else:
+            main_array[str(user_id)] = value
+
+        # Go back to the 0th index
+        file.seek(0)
+
+        # Save values
+        json.dump(main_array, file)
+
+        file.truncate()  # Remove everything from the file after
+
+
+def set_main_array(user_id, value):
+    with open("Data/userdata.json", "r+") as file:
+        main_array = json.load(file)
+
+        if main_array.get(user_id, None):
+            main_array[user_id] = value
+
+            # Go back to the 0th index
+            file.seek(0)
+
+            # Save values
+            json.dump(main_array, file)
+
+            file.truncate()  # Remove everything from the file after
+        else:
+            return None

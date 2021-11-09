@@ -96,9 +96,10 @@ class Stats(commands.Cog):
 
     @tasks.loop(minutes=1440)
     async def get_fact_of_day(self):
-        embed = create_embed("Fact of the Day", f"```{get_fact()}```")
-
-        await self.fact_channel.send(embed=embed)
+        # embed = create_embed("Fact of the Day", f"```{get_fact()}```")
+        #
+        # await self.fact_channel.send(embed=embed)
+        pass
 
         # Wait until bot is ready
 
@@ -108,7 +109,7 @@ class Stats(commands.Cog):
 
         self.guild = self.client.get_guild(guild_id)
         self.fact_channel = self.client.get_channel(fact_channel_id)
-        
+
 
 
 
