@@ -61,7 +61,7 @@ class Moderation(commands.Cog):
     @commands.check(functions.is_server_admin)
     async def nick(self, ctx, member: discord.Member = None,
                    # Default value for nickname
-                   new_nickname="User_{}".format(random.randrange(1000, 100000))):
+                   new_nickname=f"User_{random.randrange(1000, 100000)}"):
 
         # If not list checks if the list is empty
         # I used this type of if statement to learn more about one liners

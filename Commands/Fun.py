@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 
 from random import randrange
@@ -15,8 +16,14 @@ class Fun(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="PersonalityTest", description="Tells you your masculine and feminine percentage")
-    async def get_personality_test(self, ctx):
-        user_id = str(ctx.message.author.id)  # Json keys only accept str values
+    async def get_personality_test(self, ctx, member: discord.Member = None):
+        user_id = ""
+        if not member:
+            user_id = str(ctx.message.author.id)  # Json keys only accept str values
+        else:
+            user_id = str(member.id)
+
+        print(user_id)
 
         main_array = get_main_array(user_id)
 
@@ -35,13 +42,13 @@ class Fun(commands.Cog):
 
                 set_main_array(user_id, main_array)
 
-            embed = create_embed("Personality")
+            embed = create_embed("Personality", f"`{main_array['name']}`'s personality:")
             embed.add_field(name="Masculinity", value=personality["male"], inline=True)
             embed.add_field(name="Femininity", value=personality["female"], inline=True)
 
             await ctx.send(embed=embed)
         else:
-            embed = create_embed("Error", "You are not registered as a user. Please register by running the "
+            embed = create_embed("Error", "User is unregistered. Please register by running the "
                                           "!register command")
             await ctx.send(embed=embed)
 
