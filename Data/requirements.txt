@@ -2,3 +2,5 @@ discord.py
 requests
 pytz
 lxml
+yt_dlp
+ffmpeg

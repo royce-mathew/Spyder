@@ -4,6 +4,7 @@ guild_id = 572487931327938593
 stats_message_id = 836999076167548998
 stats_channel_id = 836647371588239363
 fact_channel_id = 902814165746450442
+guilds = {}
 
 #     _____                                _        
 #    |_   _|                              | |       
@@ -39,6 +40,16 @@ client = commands.Bot(command_prefix=prefix, case_insensitive=True, intents=inte
 client.remove_command('help')
 
 
+def initialize_guild_data(guild_obj):
+    guilds[guild_obj.id] = {
+       "playing": False,
+       "channel_id": None,
+       "queue": [],
+        "id": guild_obj.id,
+        "obj": guild_obj
+    }
+
+
 #     _____                    _
 #    |  ___|                  | |       
 #    | |__ __   __ ___  _ __  | |_  ___ 
@@ -52,6 +63,9 @@ client.remove_command('help')
 @client.event
 async def on_ready():
     print("Bot is online")
+    for guild in client.guilds:
+        initialize_guild_data(guild)
+        # guilds.append(guild.id)
 
 
 roles_msg_id = 789644217634127883
@@ -103,7 +117,6 @@ async def on_message_delete(message):
         f"User `{message.author.display_name}`'s deleted their message"
     )
 
-
     content = f"```{message.content if message.content else ''}```"
     embed.add_field(name="Message Content", value=content, inline=True)
     embed.add_field(name="Channel", value="```{}```".format(message.channel.name))
@@ -135,6 +148,12 @@ async def on_message_edit(before, after):
     files = await convert_to_file(before.attachments)
 
     await channel.send(embed=embed, files=files)
+
+
+# Add it to the guilds event
+@client.event
+async def on_guild_join(ctx):
+    initialize_guild_data(ctx.guild)
 
 
 #
