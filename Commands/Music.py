@@ -61,7 +61,7 @@ def set_guild_video_data(url, guild):
             "audio_url": url,
             "audio_file": f"Cache/{info_dict.get('id', None)}.mp3"
         })
-        print(guild["queue"])
+       #  print(guild["queue"])
 
 
 def download(guild, url):
@@ -140,17 +140,20 @@ class Music(commands.Cog):
                                                  f"The bot is already playing on channel `{guild['channel_id']}`"))
                 return
 
+        message = await ctx.send(embed=functions.create_embed("Now Downloading!",
+                                                        f"Song: `{url}` is now downloading!. The music will automatically start playing as soon as the download finishes."))
+
         set_guild_video_data(url, guild)
         guild["channel"] = channel
 
         # Check if there is a queue
         if len(guild["queue"]) > 1:
-            await ctx.send(embed=functions.create_embed("Added To Queue",
+            await message.edit(embed=functions.create_embed("Added To Queue",
                                                         f"Song: `{guild['queue'][-1]['audio_title']}` was added to queue."))
 
         else:  # There is nothing in the queue
-            await ctx.send(embed=functions.create_embed("Now Downloading",
-                                                        f"`{guild['queue'][0]['audio_title']}` is now downloading. The music will automatically start playing as soon as the download finishes."))
+            await message.edit(embed=functions.create_embed("Now Playing!",
+                                                        f"`{guild['queue'][0]['audio_title']}` is now playing!"))
 
     @commands.command(name="stop", description="Stops the current music. Disconnects the bot")
     @commands.check(functions.is_server_admin)
@@ -158,11 +161,8 @@ class Music(commands.Cog):
         guild_id = ctx.guild.id
         if guilds[guild_id]["voice"] is not None:
             voice = guilds[guild_id]["voice"]
-            if voice.is_playing():
-                await ctx.send(embed=functions.create_embed("Stopped playing song"))
-                voice.stop()
-            else:
-                await ctx.send(embed=functions.create_embed("Currently no audio is playing."))
+            await ctx.send(embed=functions.create_embed("Stopped playing song"))
+            voice.stop()
 
     @commands.command(name="pause", description="Pauses the current music.")
     @commands.check(functions.is_server_admin)
