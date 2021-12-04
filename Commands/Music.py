@@ -48,6 +48,7 @@ def set_guild_video_data(url, guild):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
+        'default_search': 'ytsearch',
         'noplaylist': True,
         'max_filesize': 100000000
     }
@@ -60,6 +61,7 @@ def set_guild_video_data(url, guild):
             "audio_url": url,
             "audio_file": f"Cache/{info_dict.get('id', None)}.mp3"
         })
+        print(guild["queue"])
 
 
 def download(guild, url):
@@ -71,12 +73,14 @@ def download(guild, url):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
+        'outtmpl': f"Cache/{guild['queue'][-1]['audio_id']}.mp3",
+        'default_search': 'ytsearch',
         'noplaylist': True,
         'max_filesize': 100000000
     }
 
     if not os.path.isfile(f"Cache/{guild['queue'][-1]['audio_id']}.mp3"):
-        print("Does not exist")
+        print("Does not exist, downloading")
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
 
@@ -156,7 +160,7 @@ class Music(commands.Cog):
             voice = guilds[guild_id]["voice"]
             if voice.is_playing():
                 await ctx.send(embed=functions.create_embed("Stopped playing song"))
-                await voice.stop()
+                voice.stop()
             else:
                 await ctx.send(embed=functions.create_embed("Currently no audio is playing."))
 
@@ -192,13 +196,15 @@ class Music(commands.Cog):
         if guild["playing"] and guilds[guild_id]["voice"] is not None:
             voice = guilds[guild_id]["voice"]
             if len(guild["queue"]) > 1:
+                print(len(guild["queue"]))
                 await ctx.send(embed=functions.create_embed("Skipped song"))
                 voice.stop()
                 val_popped = guild["queue"].pop(0)
                 DeleteFiles.queue_file(val_popped["audio_file"])
-                guild["playing"] = False
+                await self._play(guild)
+                # guild["playing"] = False
             else:
-                ctx.send(embed=functions.create_embed("Queue is empty. Call the `stop` command to stop the bot from playing music"))
+                await ctx.send(embed=functions.create_embed("Queue is empty", "Call the `stop` command to stop the bot from playing music"))
         else:
             await ctx.send(embed=functions.create_embed("No music currently playing."))
 
