@@ -135,7 +135,7 @@ async def on_message_edit(before, after):
         f"User `{before.author.display_name}` edited their message"
     )
 
-    # Needed or the embed messses up
+    # Needed or the embed messes up
     bf = f"```{before.content if before.content else 'None'}```"
     af = f"```{after.content if after.content else 'None'}```"
 
