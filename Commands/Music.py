@@ -113,7 +113,7 @@ class Music(commands.Cog):
         guild["voice"].play(discord.FFmpegPCMAudio(music_data["audio_file"]))
 
     @commands.command(name="play", description="Register for using commands that store data")
-    async def play(self, ctx, url=None):
+    async def play(self, ctx, *args):
         # Find the voice state that the author is in
         voice_state = ctx.author.voice
         # If the member is not in a voice channel
@@ -127,8 +127,10 @@ class Music(commands.Cog):
         channel = ctx.author.voice.channel
         guild = guilds[ctx.guild.id]
 
+        url = " ".join(args[:])
+
         # Checks if url was passed
-        if url is None:
+        if len(args) == 0:
             await ctx.send(
                 embed=functions.create_embed("No Url Passed.", "No url was passed to the command. Please try again."))
             return
@@ -150,15 +152,15 @@ class Music(commands.Cog):
         guild["channel"] = channel
         await self.connect_to_voice(guild)
 
-        if guild["queue"][-1]["audio_duration"] > 3600:
-            await message.edit(embed=functions.create_embed("Error",
-                                                            f"Song: `{guild['queue'][-1]['audio_title']}` can not be played as its duration is too long. \n\nMax Duration is : `1 hour`."))
-            return
-
         # Check if there is a queue
         if len(guild["queue"]) > 0:
+            if guild["queue"][-1]["audio_duration"] > 3600:
+                await message.edit(embed=functions.create_embed("Error",
+                                                                f"Song: `{guild['queue'][-1]['audio_title']}` can not be played as its duration is too long. \n\nMax Duration is : `1 hour`."))
+                return
+
             await message.edit(embed=functions.create_embed("Added To Queue",
-                                                            f"Song: `{guild['queue'][-1]['audio_title']}` was added to queue."))
+                                                            f"Song: `{guild['queue'][-1]['audio_title']}` was added to queue."))cd 
 
         else:  # There is nothing in the queue
             await message.edit(embed=functions.create_embed("Now Playing!",
@@ -202,14 +204,15 @@ class Music(commands.Cog):
                 await ctx.send(embed=functions.create_embed("Music is not currently paused."))
 
     @commands.command(name="skip", description="Skip the current music.")
-    @commands.check(functions.is_server_admin)
+    # @commands.check(functions.is_server_admin)
     async def skip(self, ctx):
         guild_id = ctx.guild.id
         guild = guilds[guild_id]
         try:
             voice = guilds[guild_id]["voice"]
             if len(guild["queue"]) > 0:
-                await ctx.send(embed=functions.create_embed("Skipped song"))
+                await ctx.send(embed=functions.create_embed("Skipped",
+                                                            "Current song was skipped"))
                 voice.stop()
             else:
                 await ctx.send(embed=functions.create_embed("Queue is empty",
