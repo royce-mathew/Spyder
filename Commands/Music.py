@@ -160,7 +160,7 @@ class Music(commands.Cog):
                 return
 
             await message.edit(embed=functions.create_embed("Added To Queue",
-                                                            f"Song: `{guild['queue'][-1]['audio_title']}` was added to queue."))cd 
+                                                            f"Song: `{guild['queue'][-1]['audio_title']}` was added to queue."))
 
         else:  # There is nothing in the queue
             await message.edit(embed=functions.create_embed("Now Playing!",
