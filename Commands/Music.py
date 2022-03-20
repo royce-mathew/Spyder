@@ -1,13 +1,9 @@
-from Data import functions
-
-import time
 import os
-import threading
-
-from discord.ext import commands, tasks
 import discord
 import yt_dlp
 
+from discord.ext import commands, tasks
+from Data import functions
 from main import guilds
 
 
@@ -16,28 +12,22 @@ class DeleteFilesClass:
         self._queue = []
 
     def queue_delete_file(self):
-        if len(self._queue) > 5:
-            os.remove(self._queue[0]["audio_file"])
+        if len(self._queue) > 1:
+            os.remove(self._queue[0])
+            print(f"Deleting {self._queue[0]}")
             self._queue.pop(0)
 
     def queue_file(self, file):
         self._queue.append(file)
 
+    def delete_all(self):
+        for x in self._queue:
+            os.remove(x)
+        self._queue.clear()
+
 
 # Create a class of DeleteFilesClass
 DeleteFiles = DeleteFilesClass()
-
-
-# def wait_for_sound(guild):
-#     guild_voice = guild["voice"]
-#     # While the song is playing
-#     while guild_voice.is_playing() or guild_voice.is_paused():
-#         time.sleep(1)
-#
-#     val_popped = guild["queue"].pop(0)
-#     DeleteFiles.queue_file(val_popped["audio_file"])
-#     guild["playing"] = False
-#     # guild_voice.stop()
 
 
 def set_guild_video_data(url, guild):
@@ -49,6 +39,7 @@ def set_guild_video_data(url, guild):
             'preferredquality': '192',
         }],
         'default_search': 'ytsearch',
+        'verbose': True,
         'noplaylist': True,
         'max_filesize': 100000000
     }
@@ -62,7 +53,6 @@ def set_guild_video_data(url, guild):
             "audio_file": f"Cache/{info_dict.get('id', None)}.mp3",
             "audio_duration": info_dict.get('duration', None),
         })
-    #  print(guild["queue"])
 
 
 def download(guild, url):
@@ -85,6 +75,7 @@ def download(guild, url):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
 
+
 class Music(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -102,8 +93,8 @@ class Music(commands.Cog):
 
     async def _play(self, guild):
         music_data = guild["queue"][0]
-        channel = guild["channel"]
-        print("Connecting")
+        # channel = guild["channel"]
+        # print("Connecting")
 
         # await channel.connect()  # Connect to channel
         # Voice, lets the bot use voice in discord
@@ -112,7 +103,8 @@ class Music(commands.Cog):
         await self.connect_to_voice(guild)
         guild["voice"].play(discord.FFmpegPCMAudio(music_data["audio_file"]))
 
-    @commands.command(name="play", description="Register for using commands that store data")
+    @commands.command(name="play", description="Register for using commands that store data",
+                      aliases=["p"])
     async def play(self, ctx, *args):
         # Find the voice state that the author is in
         voice_state = ctx.author.voice
@@ -127,13 +119,14 @@ class Music(commands.Cog):
         channel = ctx.author.voice.channel
         guild = guilds[ctx.guild.id]
 
-        url = " ".join(args[:])
+        url = " ".join(args)
 
         # Checks if url was passed
         if len(args) == 0:
             await ctx.send(
                 embed=functions.create_embed("No Url Passed.", "No url was passed to the command. Please try again."))
             return
+
         try:
             if guild["voice"].is_playing():  # If its already playing music
                 # if its not in the same channel
@@ -154,14 +147,17 @@ class Music(commands.Cog):
 
         # Check if there is a queue
         if len(guild["queue"]) > 0:
-            if guild["queue"][-1]["audio_duration"] > 3600:
+            try:
+                if guild["queue"][-1]["audio_duration"] > 3600:
+                    await message.edit(embed=functions.create_embed("Error",
+                                                                    f"Song: `{guild['queue'][-1]['audio_title']}` can not be played as its duration is too long. \n\nMax Duration is : `1 hour`."))
+                    return
+
+                await message.edit(embed=functions.create_embed("Added To Queue",
+                                                                f"Song: `{guild['queue'][-1]['audio_title']}` was added to queue."))
+            except TypeError:
                 await message.edit(embed=functions.create_embed("Error",
-                                                                f"Song: `{guild['queue'][-1]['audio_title']}` can not be played as its duration is too long. \n\nMax Duration is : `1 hour`."))
-                return
-
-            await message.edit(embed=functions.create_embed("Added To Queue",
-                                                            f"Song: `{guild['queue'][-1]['audio_title']}` was added to queue."))
-
+                                                                f"An error occured, guild['queue'][-1]['audio_duration'] could not be accessed"))
         else:  # There is nothing in the queue
             await message.edit(embed=functions.create_embed("Now Playing!",
                                                             f"`{guild['queue'][0]['audio_title']}` is now playing!"))
@@ -169,9 +165,12 @@ class Music(commands.Cog):
     @commands.command(name="stop", description="Stops the current music. Disconnects the bot")
     @commands.check(functions.is_server_admin)
     async def stop(self, ctx):
-        guild_id = ctx.guild.id
+        guild = guilds[ctx.guild.id]
+        guild["queue"].clear() # Empty the queue
+        DeleteFiles.delete_all()
+
         try:
-            voice = guilds[guild_id]["voice"]
+            voice = guild["voice"]
             await ctx.send(embed=functions.create_embed("Stopped playing song"))
             await voice.disconnect()
         except KeyError:
@@ -209,11 +208,17 @@ class Music(commands.Cog):
         guild_id = ctx.guild.id
         guild = guilds[guild_id]
         try:
-            voice = guilds[guild_id]["voice"]
+            voice = guild["voice"]
             if len(guild["queue"]) > 0:
+                voice.stop()
+                # Queue to Delete
+                DeleteFiles.queue_file(guild["queue"].pop(0)["audio_file"])
+                if len(guild["queue"]) > 0:
+                    print(f"Before{guild['queue']}")
+                    guild["currently_playing"] = guild["queue"][0]
+                    print(f"After{guild['queue']}")
                 await ctx.send(embed=functions.create_embed("Skipped",
                                                             "Current song was skipped"))
-                voice.stop()
             else:
                 await ctx.send(embed=functions.create_embed("Queue is empty",
                                                             "Call the `stop` command to stop the bot from playing music"))
@@ -221,7 +226,8 @@ class Music(commands.Cog):
             await ctx.send(embed=functions.create_embed("Error",
                                                         "Bot is not currently in a voice channel. Run the `play` command to play music."))
 
-    @commands.command(name="queue", description="Shows the current Queue")
+    @commands.command(name="queue", description="Shows the current Queue",
+                      aliases=["q"])
     async def queue(self, ctx):
         guild_id = ctx.guild.id
         main_string = ""
@@ -254,6 +260,17 @@ class Music(commands.Cog):
             await ctx.send(embed=functions.create_embed("Error",
                                                         "There is no music currently playing. Run the `play` command to play music."))
 
+    @commands.command(name="loop", description="Loops the current music")
+    async def loop(self, ctx):
+        try:
+            guilds[ctx.guild.id]["looped"] = not guilds[ctx.guild.id]["looped"]
+            await ctx.send(embed=functions.create_embed("Set Loop",
+                                            f'Loop is set to `{guilds[ctx.guild.id]["looped"]}`'))
+        except KeyError:
+            guilds[ctx.guild.id]["looped"] = True
+            await ctx.send(embed=functions.create_embed("Looping!",
+                                            f"Current song will be looped!"))
+
     # Keeps the queue updated
     @tasks.loop(seconds=1)
     async def audio_player_task(self):
@@ -265,14 +282,15 @@ class Music(commands.Cog):
                     if len(guild_list["queue"]) > 0:  # if there are music objects in queue
                         await self._play(guild_list)  # Play the sound
 
-                        guild_list["currently_playing"] = guild_list["queue"].pop(0)
-                        # Queue to Delete
-                        DeleteFiles.queue_file(guild_list["currently_playing"]["audio_file"])
+                        if not guild_list["looped"]:
+                            # Queue to Delete
+                            DeleteFiles.queue_file(guild_list["queue"].pop(0)["audio_file"])
+                            guild_list["currently_playing"] = guild_list["queue"][0]
 
             except KeyError:
                 pass
 
-    @tasks.loop(minutes=15)
+    @tasks.loop(minutes=10)
     async def file_deleter(self):
         DeleteFiles.queue_delete_file()
 
@@ -280,6 +298,9 @@ class Music(commands.Cog):
     async def before_stat(self):
         # Wait until the client is ready before starting the loop
         await self.client.wait_until_ready()
+        for guild_id, guild_list in guilds.items():
+            guild_list["looped"] = False
+
 
 
 def setup(client):
