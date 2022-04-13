@@ -137,9 +137,14 @@ class Moderation(commands.Cog):
             if str_said_yes.lower() == "y" or str_said_yes.lower() == "yes":
                 embed = functions.create_embed("Successfully Registered", f"You were registered as {name}. Welcome to "
                                                                           f"the Coalition.")
+                role = discord.utils.find(lambda r: r.name == "Verified", ctx.guild)
                 await bot_msg.edit(embed=embed)
 
-                functions.create_main_array(user_id, {"name": name})
+                if role is not None:
+                    functions.create_main_array(user_id, {"name": name})
+                    member = discord.utils.find(lambda m: m.id == ctx.user_id, ctx.guild)
+                    await member.add_roles(role, reason=f"Spyder Verified, {name}")
+                    print(f"Verified {name}")
 
             else:
                 embed = functions.create_embed("Error", "You did not agree to the Terms of Conditions.")
