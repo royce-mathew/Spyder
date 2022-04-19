@@ -142,7 +142,7 @@ class Moderation(commands.Cog):
 
                 if role is not None:
                     functions.create_main_array(user_id, {"name": name})
-                    member = discord.utils.find(lambda m: m.id == ctx.user_id, ctx.guild)
+                    member = discord.utils.find(lambda m: m.id == ctx.user_id, ctx.guild.members)
                     await member.add_roles(role, reason=f"Spyder Verified, {name}")
                     print(f"Verified {name}")
 
