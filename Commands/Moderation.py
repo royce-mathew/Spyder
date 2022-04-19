@@ -137,7 +137,7 @@ class Moderation(commands.Cog):
             if str_said_yes.lower() == "y" or str_said_yes.lower() == "yes":
                 embed = functions.create_embed("Successfully Registered", f"You were registered as {name}. Welcome to "
                                                                           f"the Coalition.")
-                role = discord.utils.find(lambda r: r.name == "Verified", ctx.guild)
+                role = discord.utils.find(lambda r: r.name == "Verified", ctx.guild.roles)
                 await bot_msg.edit(embed=embed)
 
                 if role is not None:
