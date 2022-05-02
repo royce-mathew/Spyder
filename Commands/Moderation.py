@@ -86,21 +86,24 @@ class Moderation(commands.Cog):
     async def register(self, ctx):
         author = ctx.message.author
         user_id = str(author.id)
+        role = discord.utils.find(lambda r: r.name == "Verified", ctx.guild.roles)
 
         main_array = functions.get_main_array(user_id)
 
-        if main_array:
+        if main_array and role in author.roles:
             embed = functions.create_embed("Registered", "You are already registered")
             await ctx.send(embed=embed)
 
         else:
-            bot_msg = await ctx.send(embed=functions.create_embed("Registration Process", "This process may take a while."))
+            bot_msg = await ctx.send(
+                embed=functions.create_embed("Registration Process", "This process may take a while."))
 
             # Wait 2 seconds
             await asyncio.sleep(2)
 
             # Name Prompt
-            await bot_msg.edit(embed=functions.create_embed("Name", "Enter your name, has to be an ascii character [A-Z,a-z]"))
+            await bot_msg.edit(
+                embed=functions.create_embed("Name", "Enter your name, has to be an ascii character [A-Z,a-z]"))
 
             # Ask for name and stuff
             msg = await self.client.wait_for('message', check=check(author), timeout=30)
@@ -137,12 +140,11 @@ class Moderation(commands.Cog):
             if str_said_yes.lower() == "y" or str_said_yes.lower() == "yes":
                 embed = functions.create_embed("Successfully Registered", f"You were registered as {name}. Welcome to "
                                                                           f"the Coalition.")
-                role = discord.utils.find(lambda r: r.name == "Verified", ctx.guild.roles)
                 await bot_msg.edit(embed=embed)
 
                 if role is not None:
                     functions.create_main_array(user_id, {"name": name})
-                    member = discord.utils.find(lambda m: m.id == ctx.user_id, ctx.guild.members)
+                    member = discord.utils.find(lambda m: m.id == author.id, ctx.guild.members)
                     await member.add_roles(role, reason=f"Spyder Verified, {name}")
                     print(f"Verified {name}")
 
