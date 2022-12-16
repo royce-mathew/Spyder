@@ -1,10 +1,10 @@
 # Variables
 prefix = "!"
-guild_id = 572487931327938593
-stats_message_id = 836999076167548998
-stats_channel_id = 836647371588239363
-fact_channel_id = 902814165746450442
-guilds = {}
+
+# Dicts
+guilds = {} # Stores Temp Data about Guilds
+guild_data = {} # Stores Guild Configs
+role_messages = {} # Roles for guilds
 
 #     _____                                _        
 #    |_   _|                              | |       
@@ -15,15 +15,17 @@ guilds = {}
 #                     | |                           
 #                     |_|                          
 #
+from Data import functions
 
 import os
-from Data import functions
+from dotenv import load_dotenv
 import discord
-# We import commands and tasks from discord ext
-from discord.ext import commands
+from discord.ext import commands # We import commands and tasks from discord ext
+import json
 
 # Declare intents
 intents = discord.Intents.all()
+load_dotenv()
 
 #     _____  _  _               _   
 #    /  __ \| |(_)             | |  
@@ -41,6 +43,20 @@ client.remove_command('help')
 
 
 def initialize_guild_data(guild_obj):
+    str_id: str = str(guild_obj.id) # Convert Guild ID to String
+
+    if str_id not in guild_data: # Check if new guild joined
+        guild_data[str_id] = {
+            "stats_message_id": 0,
+            "fact_channel_id": 0,
+            "stats_channel_id": 0,
+            "roles_message_id": 0
+        }
+
+    # Append All Roles Message Id 
+    role_messages[guild_data[str_id]["roles_message_id"]] = str_id # Link Back to Guild
+
+    # Temp Data
     guilds[guild_obj.id] = {
        "playing": False,
        "channel_id": None,
@@ -63,20 +79,28 @@ def initialize_guild_data(guild_obj):
 @client.event
 async def on_ready():
     print("Bot is online")
-    for guild in client.guilds:
-        initialize_guild_data(guild)
-        # guilds.append(guild.id)
 
+    # Open the json file
+    with open("Data/settings.json", "r") as settings_file:
+        main_data: list = json.load(settings_file)
+    
+    for guild in client.guilds: # Loop through guilds
 
-roles_msg_id = 789644217634127883
+        initialize_guild_data(guild) # Initialize Temp Guild Data
+
+    # Serialize the Json
+    json_object = json.dumps(main_data, indent=4)
+
+    # Open settings_file and write new guilds
+    with open("Data/settings.json", "w") as settings_file:
+        settings_file.write(json_object)
 
 
 # On reaction Event
 @client.event
 async def on_raw_reaction_add(ctx):
-    if ctx.message_id == roles_msg_id:
-        local_guild_id = ctx.guild_id
-        guild = discord.utils.find(lambda g: g.id == local_guild_id, client.guilds)
+    if ctx.message_id in role_messages:
+        guild = discord.utils.find(lambda g: g.id == ctx.guild_id, client.guilds)
         role = discord.utils.find(lambda r: r.name == ctx.emoji.name, guild.roles)
         if role is not None:
             member = discord.utils.find(lambda m: m.id == ctx.user_id, guild.members)  # ctx.member
@@ -88,7 +112,7 @@ async def on_raw_reaction_add(ctx):
 @client.event
 async def on_raw_reaction_remove(ctx):
     # Check if the message id is the same as the roles_msg_id
-    if ctx.message_id == roles_msg_id:
+    if ctx.message_id in role_messages:
         # Get guild, role and then remove the role
         local_guild_id = ctx.guild_id
         guild = discord.utils.find(lambda g: g.id == local_guild_id, client.guilds)
@@ -247,4 +271,4 @@ for filename in os.listdir("./Commands"):
         client.load_extension(f'Commands.{filename[0:name]}')
 
 # Run the token
-client.run("NzMwMTcxMTkxNjMyOTg2MjM0.XwuZzg.fVsgMOaq2VUaSdZXmGVDIBuqxpk")
+client.run(os.getenv("DISCORD_TOKEN"))

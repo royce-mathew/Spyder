@@ -1,0 +1,6 @@
+discord.py[voice]
+pytz
+yt-dlp
+lxml
+requests
+python-dotenv

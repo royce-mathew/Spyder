@@ -82,6 +82,11 @@ class Moderation(commands.Cog):
             )
         )
 
+
+    @commands.command(name="setup", description="Setup the current server for the bot")
+    async def setup(self, ctx):
+        pass;
+
     @commands.command(name="register", description="Register for using commands that store data")
     async def register(self, ctx):
         author = ctx.message.author
