@@ -26,5 +26,5 @@ class Download(commands.Cog):
         #elif host == "yt" or host == "youtube":
 
 
-def setup(client):
-    client.add_cog(Download(client))
+async def setup(client):
+    await client.add_cog(Download(client))

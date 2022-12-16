@@ -1,9 +1,12 @@
 import discord
 from discord.ext import commands
+from modules.json_handler import UserData
 
 from random import randrange
 
-from Data.functions import get_fact, create_embed, get_main_array, set_main_array
+from Data.functions import get_fact, create_embed
+
+user_data = UserData()
 
 
 class Fun(commands.Cog):
@@ -25,7 +28,7 @@ class Fun(commands.Cog):
 
         print(user_id)
 
-        main_array = get_main_array(user_id)
+        main_array = user_data.get_user_data(user_id)
 
         if main_array is not None:
             personality = main_array.get("personality", None)
@@ -40,7 +43,7 @@ class Fun(commands.Cog):
                 main_array["personality"]["male"] = male_percent
                 main_array["personality"]["female"] = female_percent
 
-                set_main_array(user_id, main_array)
+                user_data.set_user_data(user_id=user_id, key="personality", value=personality)
 
             embed = create_embed("Personality", f"`{main_array['name']}`'s personality:")
             embed.add_field(name="Masculinity", value=personality["male"], inline=True)
@@ -53,5 +56,5 @@ class Fun(commands.Cog):
             await ctx.send(embed=embed)
 
 
-def setup(client):
-    client.add_cog(Fun(client))
+async def setup(client):
+    await client.add_cog(Fun(client))

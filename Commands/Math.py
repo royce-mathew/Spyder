@@ -58,5 +58,5 @@ class Math(commands.Cog):
             await ctx.send(command_format)
 
 
-def setup(client):
-    client.add_cog(Math(client))
+async def setup(client):
+    await client.add_cog(Math(client))

@@ -4,7 +4,7 @@ from discord.ext import tasks, commands
 # Import time for time stat
 import datetime
 from pytz import timezone
-from main import stats_message_id, stats_channel_id, fact_channel_id, guild_id
+from modules.json_handler import GuildData
 
 # Covid Stats
 from lxml import html
@@ -15,8 +15,14 @@ from Data.functions import create_embed, get_fact
 # List containing all the titles that we will get the data for
 text_list = ["Currently Infected", "Mild Condition", "Serious or Critical",
              "Cases with Outcome", "Recovered/Discharged", "Deaths"]
+timezones = ["US/Central", "US/Pacific", "Canada/Eastern", 
+            "Asia/Calcutta", "Turkey", "EST", "UTC",
+            "US/Mountain", "Egypt", "Europe/Amsterdam"]
 
 embed_const = "```{}```"
+
+guild_data = GuildData() # Get instance of guild data
+timezones.sort() # Sort the list
 
 
 class Stats(commands.Cog):
@@ -47,69 +53,80 @@ class Stats(commands.Cog):
         source_date = datetime.datetime.now()
         source = timezone("Canada/Eastern").localize(source_date)
 
-        timezones = ["US/Central", "US/Pacific", "Canada/Eastern", "Asia/Calcutta", "Turkey", "EST", "UTC",
-                     "US/Mountain", "Egypt", "Europe/Amsterdam"]
 
-        # Sort the list
-        timezones.sort()
+        nb_time = (source.astimezone(timezone("Canada/Eastern")) + datetime.timedelta(hours=1)).strftime("%I:%M %p")
 
-        # Create discord Embed
-        embed = create_embed(
-            "Server Status",
-            "Members: {}\nhttps://discord.gg/ZCvcu36\nRegion: {}\n\n**Server Time**".format(
-                self.guild.member_count,
-                self.guild.region),
-        )
+        # Get the message with message id
+        for guild in self.client.guilds:
+            if current_guild_settings := guild_data.get_guild_data(guild_obj=guild) is None: 
+                return
+           
+            # Create discord Embed
+            embed = create_embed(
+                "Server Status",
+                f"""Members: {guild.member_count}\n
+                https://discord.gg/ZCvcu36\n
+                Region: {self.guild.region}\n\n
+                **Server Time**""",
+            )
 
-        # For each timezone in the timezones list
-        for tz in timezones:
-            # Add a field in the embed
+            # Add NB
             embed.add_field(
-                name=tz,
-                value=embed_const.format(source.astimezone(timezone(tz)).strftime("%I:%M %p")),
+                name="New_Brunswick (Manual)",
+                value=embed_const.format(nb_time),
                 inline=True
             )
 
-        nb_time = (source.astimezone(timezone("Canada/Eastern")) + datetime.timedelta(hours=1)).strftime("%I:%M %p")
-        # Add NB
-        embed.add_field(
-            name="New_Brunswick (Manual)",
-            value=embed_const.format(nb_time),
-            inline=True
-        )
+            # For each timezone in the timezones list
+            for tz in timezones:
+                # Add a field in the embed
+                embed.add_field(
+                    name=tz,
+                    value=embed_const.format(source.astimezone(timezone(tz)).strftime("%I:%M %p")),
+                    inline=True
+                )
 
-        # Get the message with message id
-        msg = await self.stat_channel.fetch_message(stats_message_id)
+            if (stats_channel_id := current_guild_settings["stats_channel_id"]) == 0: # Skip this guild if stats_channel was not filled
+                continue;
+
+            stat_channel = self.client.get_channel(stats_channel_id)
+            
+            try: # Fetch the message
+                msg = await stat_channel.fetch_message(current_guild_settings["stats_message_id"])
+            except discord.NotFound: # Message not found
+                msg = await stat_channel.send("stats") # Send an empty message
+                guild_data.edit_guild_settings(guild,
+                    {"stats_message_id": msg.id}
+                )
+            except Exception as err:
+                print(err)
+                return
+    
         # edit the message
         await msg.edit(embed=embed)
 
-        # Wait until bot is ready
 
     @stat.before_loop
     async def before_stat(self):
         # Wait until the client is ready before starting the loop
         await self.client.wait_until_ready()
 
-        # Set here because these lines can only be run after the client is ready
-        self.guild = self.client.get_guild(guild_id)
-        self.stat_channel = self.client.get_channel(stats_channel_id)
-
     @tasks.loop(minutes=1440)
     async def get_fact_of_day(self):
         embed = create_embed("Fact of the Day", f"```{get_fact()}```")
-        
-        await self.fact_channel.send(embed=embed)
 
-        # Wait until bot is ready
+        # Loop through guilds and send fact of the day for guild
+        for guild in self.client.guilds:
+            if current_guild_settings := guild_data.get_guild_data(guild_obj=guild) is not None:
+                fact_channel_id = current_guild_settings["fact_channel_id"]
+
+                if fact_channel_id is not None and fact_channel_id  != 0:
+                    channel = self.client.get_channel(fact_channel_id)
+                    await channel.send(embed=embed)
 
     @get_fact_of_day.before_loop
     async def before_fod(self):
         await self.client.wait_until_ready()
-
-        self.guild = self.client.get_guild(guild_id)
-        self.fact_channel = self.client.get_channel(fact_channel_id)
-
-
 
 
 
@@ -137,5 +154,5 @@ class Stats(commands.Cog):
         await ctx.send(embed=embed)
 
 
-def setup(client):
-    client.add_cog(Stats(client))
+async def setup(client):
+    await client.add_cog(Stats(client))

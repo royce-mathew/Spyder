@@ -3,12 +3,14 @@
         "stats_message_id": 836999076167548998,
         "fact_channel_id": 902814165746450442,
         "stats_channel_id": 836647371588239363,
-        "roles_message_id": 789644217634127883
+        "roles_message_id": 789644217634127883,
+        "prefix": "!"
     },
     "892033556614897684": {
         "stats_message_id": 0,
         "fact_channel_id": 0,
         "stats_channel_id": 0,
-        "roles_message_id": 0
+        "roles_message_id": 0,
+        "prefix": "!"
     }
 }

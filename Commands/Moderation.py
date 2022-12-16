@@ -4,6 +4,10 @@ from Data import functions
 import discord
 from discord.ext import commands
 
+# Import UserData Class
+from modules import json_handler
+json_handler.UserData() # Call the init method
+
 import asyncio
 import re
 
@@ -158,5 +162,5 @@ class Moderation(commands.Cog):
                 await bot_msg.edit(embed=embed)
 
 
-def setup(client):
-    client.add_cog(Moderation(client))
+async def setup(client):
+    await client.add_cog(Moderation(client))
