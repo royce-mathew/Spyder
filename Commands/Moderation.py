@@ -1,36 +1,30 @@
-import random
-
-from Data import functions
+import asyncio
+from modules import functions
 import discord
 from discord.ext import commands
-
-# Import UserData Class
-from modules import json_handler
-json_handler.UserData() # Call the init method
-
-import asyncio
+from modules.data_handler import UserData, GuildData
+import random
 import re
+
 
 string_regex = re.compile("[A-Za-z]+")  # Characters from range a-z
 
 
-# age_regex = re.compile("[0-9]+")
-
-def check(author):
-    def inner_check(message):
+def check(author: discord.Message.author): # Check if the author is the author of the original message (For Verification)
+    def inner_check(message: discord.Message):
         return message.author == author
 
     return inner_check
 
 
 class Moderation(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.command(name="Mute", description="Mute a user")
     @commands.check(functions.is_server_admin)
     # member: discord.Member = None basically checks if the member has type discord.Member, if not then let it be None
-    async def mute(self, ctx, member: discord.Member = None):
+    async def mute(self, ctx: commands.Context, member: discord.Member = None):
         # If member has the default value
         if member is None:
             await ctx.send("User was not passed")
@@ -41,13 +35,13 @@ class Moderation(commands.Cog):
         await ctx.send(
             embed=functions.create_embed(
                 "Muted",
-                "User `{}` was muted by `{}`".format(member.display_name, ctx.message.author.display_name)
+                f"User `{member.display_name}` was muted by `{ctx.message.author.display_name}`"
             )
         )
 
     @commands.command(name="Unmute", description="Unmute a user")
     @commands.check(functions.is_server_admin)
-    async def unmute(self, ctx, member: discord.Member = None):
+    async def unmute(self, ctx: commands.Context, member: discord.Member = None):
         if member is None:
             await ctx.send("User was not passed")
             return
@@ -57,20 +51,16 @@ class Moderation(commands.Cog):
         await ctx.send(
             embed=functions.create_embed(
                 "Unmuted",
-                "User `{}` was unmuted by `{}`".format(member.display_name, ctx.message.author.display_name)
+                f"User `{member.display_name}` was unmuted by `{ctx.message.author.display_name}`"
             )
         )
 
     @commands.command(name="Nick", description="Give user nickname", aliases=["nickname", "rename"])
     @commands.check(functions.is_server_admin)
-    async def nick(self, ctx, member: discord.Member = None,
+    async def nick(self, ctx: commands.Context, member: discord.Member = None,
                    # Default value for nickname
                    new_nickname=f"User_{random.randrange(1000, 100000)}"):
 
-        # If not list checks if the list is empty
-        # I used this type of if statement to learn more about one liners
-        # The code was
-        #    if [x for x in (member, new_nickname) if x is None]
 
         if member is None:
             await ctx.send("Member / Nickname was not passed")
@@ -80,87 +70,85 @@ class Moderation(commands.Cog):
         await ctx.send(
             embed=functions.create_embed(
                 "Set Nickname",
-                "User `{}` was renamed to `{}` by `{}`".format(member.name,
-                                                               new_nickname,
-                                                               ctx.message.author.display_name)
+                f"User `{member.name}` was renamed to `{new_nickname}` by `{ctx.message.author.display_name}`"
             )
         )
 
 
     @commands.command(name="setup", description="Setup the current server for the bot")
-    async def setup(self, ctx):
+    async def setup(self, ctx: commands.Context):
         pass;
 
     @commands.command(name="register", description="Register for using commands that store data")
-    async def register(self, ctx):
-        author = ctx.message.author
-        user_id = str(author.id)
-        role = discord.utils.find(lambda r: r.name == "Verified", ctx.guild.roles)
+    async def register(self, ctx: commands.Context):
+        author: discord.Message.author = ctx.message.author # Message Author
+        user_id: str = str(author.id) # Author ID converted to String
+        role: discord.Role = discord.utils.find(lambda r: r.name == "Verified", ctx.guild.roles) # Find verified role in the Guild
 
-        main_array = functions.get_main_array(user_id)
 
-        if main_array and role in author.roles:
+        # CHECKS
+        # Check if user already has role
+        if (local_data := UserData.get_user_data(user_id)) is not None and local_data.get('name', None) is not None and role in author.roles:
             embed = functions.create_embed("Registered", "You are already registered")
             await ctx.send(embed=embed)
+            return
+        # Check if terms of conditions were set up in this guild
+        if (local_guild_data := GuildData.get_guild_data(ctx.guild)) is None or (terms_of_conditions := local_guild_data.get("terms_and_conditions", None)) is None:
+            embed = functions.create_embed("Terms and Conditions Not Setup", "Terms and Conditions were not set for this server. Please run the setup command to set variables for your server.")
+            await ctx.send(embed=embed);
+            return;
+
+
+        # Send initial message
+        bot_message: discord.Message = await ctx.send(embed=functions.create_embed("Registration Process", "This process may take a while."))
+
+        # Wait 2 seconds
+        await asyncio.sleep(2)
+
+        # Name Prompt
+        await bot_message.edit(embed=functions.create_embed("Name", "Enter username, has to be an ascii character [A-Z,a-z]"))
+
+        # Wait for client input
+        client_response = await self.client.wait_for('message', check=check(author), timeout=30)
+        name: str = client_response.content
+
+        # Check if name is valid
+        if not string_regex.match(name):
+            embed = functions.create_embed("Invalid Characters in Name", "Characters must be [A-Z,a-z]. \nRun the !register command again.")
+            await bot_message.edit(embed=embed)
+            return
+
+
+        # Terms of Conditions Prompt
+        embed = functions.create_embed("Terms of Conditions", 
+        description=f"{terms_of_conditions}\n\nDo you agree with these conditions? [Y | N] [Yes | No]")
+
+        await bot_message.edit(embed=embed) # Edit the message
+        client_response = await self.client.wait_for('message', check=check(author), timeout=30) # Wait for response
+
+        # Check valid string
+        if not string_regex.match(client_response.content):
+            embed = functions.create_embed("Invalid Characters in Response",
+                                        "Characters must be [A-Z,a-z]. \nRun the "
+                                        "!register command again.")
+            await ctx.send(embed=embed)
+            return;
+
+        # Check if yes
+        if client_response.content.lower() == "y" or client_response.content.lower() == "yes":
+            embed = functions.create_embed("Successfully Registered", f"You were registered as {name}. Welcome to the Server.")
+            await bot_message.edit(embed=embed)
+
+            if role is not None:
+                UserData.set_user_data(user_id, key="name", value=name);
+                member = discord.utils.find(lambda m: m.id == author.id, ctx.guild.members)
+                await member.add_roles(role, reason=f"Spyder Verified, {name}")
+                print(f"Verified {name}")
 
         else:
-            bot_msg = await ctx.send(
-                embed=functions.create_embed("Registration Process", "This process may take a while."))
-
-            # Wait 2 seconds
-            await asyncio.sleep(2)
-
-            # Name Prompt
-            await bot_msg.edit(
-                embed=functions.create_embed("Name", "Enter your name, has to be an ascii character [A-Z,a-z]"))
-
-            # Ask for name and stuff
-            msg = await self.client.wait_for('message', check=check(author), timeout=30)
-            name = msg.content
-            # Check
-
-            if not string_regex.match(name):
-                embed = functions.create_embed("Invalid Characters in Name", "Characters must be [A-Z,a-z]. \nRun the "
-                                                                             "!register command again.")
-                await bot_msg.edit(embed=embed)
-
-            # ToC prompt
-            embed = functions.create_embed("Terms of Conditions", description="``` This server is not for children, "
-                                                                              "we talk about sensitive topics here "
-                                                                              "and if you are uncomfortable with nsfw "
-                                                                              "or other sensitive topics, please do not"
-                                                                              " consider verifying."
-                                                                              "```\n\nDo you agree with "
-                                                                              "these conditions? [Y | N] [Yes | No]")
-
-            await bot_msg.edit(embed=embed)
-            # Wait for response
-            msg = await self.client.wait_for('message', check=check(author), timeout=30)
-            str_said_yes = msg.content
-
-            # Check valid string
-            if not string_regex.match(str_said_yes):
-                embed = functions.create_embed("Invalid Characters in Response",
-                                               "Characters must be [A-Z,a-z]. \nRun the "
-                                               "!register command again.")
-                await ctx.send(embed=embed)
-
-            # Check if yes
-            if str_said_yes.lower() == "y" or str_said_yes.lower() == "yes":
-                embed = functions.create_embed("Successfully Registered", f"You were registered as {name}. Welcome to "
-                                                                          f"the Coalition.")
-                await bot_msg.edit(embed=embed)
-
-                if role is not None:
-                    functions.create_main_array(user_id, {"name": name})
-                    member = discord.utils.find(lambda m: m.id == author.id, ctx.guild.members)
-                    await member.add_roles(role, reason=f"Spyder Verified, {name}")
-                    print(f"Verified {name}")
-
-            else:
-                embed = functions.create_embed("Error", "You did not agree to the Terms of Conditions.")
-                await bot_msg.edit(embed=embed)
+            embed = functions.create_embed("Error", "You did not agree to the Terms of Conditions.")
+            await bot_message.edit(embed=embed)
 
 
-async def setup(client):
+async def setup(client: discord.Client):
     await client.add_cog(Moderation(client))
