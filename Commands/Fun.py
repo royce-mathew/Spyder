@@ -1,36 +1,27 @@
 import discord
 from discord.ext import commands
-from modules.json_handler import UserData
+from modules.data_handler import UserData
 
 from random import randrange
 
-from Data.functions import get_fact, create_embed
-
-user_data = UserData()
+from modules.functions import get_fact, create_embed
 
 
 class Fun(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.command(name="GetFact", description="Provides a random fact using requests")
-    async def get_fact(self, ctx):
+    async def get_fact(self, ctx: commands.Context):
         embed = create_embed("Fact", f"```{get_fact()}```")
         await ctx.send(embed=embed)
 
     @commands.command(name="PersonalityTest", description="Tells you your masculine and feminine percentage")
     async def get_personality_test(self, ctx, member: discord.Member = None):
-        user_id = ""
-        if not member:
-            user_id = str(ctx.message.author.id)  # Json keys only accept str values
-        else:
-            user_id = str(member.id)
+        user_id = str(ctx.message.author.id)  if (member is None) else str(member.id)
+        main_array = UserData.get_user_data(user_id)
 
-        print(user_id)
-
-        main_array = user_data.get_user_data(user_id)
-
-        if main_array is not None:
+        if (main_array is not None) and (main_array.get("name", None) is not None):
             personality = main_array.get("personality", None)
 
             if personality is None:
@@ -43,7 +34,7 @@ class Fun(commands.Cog):
                 main_array["personality"]["male"] = male_percent
                 main_array["personality"]["female"] = female_percent
 
-                user_data.set_user_data(user_id=user_id, key="personality", value=personality)
+                UserData.set_user_data(user_id=user_id, key="personality", value=personality)
 
             embed = create_embed("Personality", f"`{main_array['name']}`'s personality:")
             embed.add_field(name="Masculinity", value=personality["male"], inline=True)
