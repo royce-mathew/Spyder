@@ -16,8 +16,8 @@ valid_guild_keys: dict = {
 }
 
 # Start Databases
-user_data = plyvel.DB("Data/Database/user_data", create_if_missing=True)
-guild_data = plyvel.DB("Data/Database/guild_data", create_if_missing=True)
+user_data = plyvel.DB("data/Database/user_data", create_if_missing=True)
+guild_data = plyvel.DB("data/Database/guild_data", create_if_missing=True)
 print("Started Databases")
 
 with user_data.snapshot() as snap:

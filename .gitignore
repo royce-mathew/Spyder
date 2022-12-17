@@ -4,4 +4,4 @@ __pycache__
 venv
 Cache/
 .env
-Data/Database/
+data/Database/*

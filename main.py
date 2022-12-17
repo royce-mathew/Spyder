@@ -177,7 +177,7 @@ async def load(ctx: commands.Context, extension: str):
     print("Loaded" + extension)
 
     # Load the file
-    await client.load_extension(f'Commands.{extension}')
+    await client.load_extension(f'cog.{extension}')
 
     # Create an embed and send it
     embed = functions.create_embed(
@@ -197,7 +197,7 @@ async def unload(ctx: commands.Context, extension: str):
     print("Unloaded" + extension)
 
     # Unload the file
-    await client.unload_extension(f'Commands.{extension}')
+    await client.unload_extension(f'cog.{extension}')
 
     # Create a embed and send it
     embed = functions.create_embed(
@@ -217,7 +217,7 @@ async def reload(ctx: commands.Context, extension: str):
     print("Reloaded" + extension)
 
     # Reload the file 
-    await client.reload_extension(f'Commands.{extension}')
+    await client.reload_extension(f'cog.{extension}')
 
     # Make an embed and send it
     embed = functions.create_embed(
@@ -241,11 +241,10 @@ async def reload(ctx: commands.Context, extension: str):
 async def main():
     async with client:
         # Gets all the files inside Commands folder using os.listdir,
-        # We can't use open("./Commands","r") because that only opens one file
-        for filename in os.listdir("./Commands"):
+        for filename in os.listdir("./cogs"):
             if filename.endswith(".py"):
                 name = len(filename) - 3; # Remove.py extension
-                await client.load_extension(f'Commands.{filename[0:name]}'); # Load the file
+                await client.load_extension(f'cogs.{filename[0:name]}'); # Load the file
 
         await client.start(os.getenv("DISCORD_TOKEN")) # Start the client 
 
