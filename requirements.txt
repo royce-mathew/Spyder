@@ -4,3 +4,4 @@ yt-dlp
 lxml
 requests
 python-dotenv
+plyvel

@@ -13,7 +13,7 @@ guilds = {} # Stores Temp Data about Guilds
 #                     | |                           
 #                     |_|                          
 #
-from Data import functions
+from modules import functions
 
 import asyncio
 import os
@@ -22,10 +22,9 @@ import discord
 from discord.ext import commands # We import commands and tasks from discord ext
 import json
 
-from modules import json_handler
+# Run __init__ method for Guild Data is ran in the json_handler class
+from modules.data_handler import GuildData, roles_dict
 
-
-guild_data = json_handler.GuildData() # Run __init__ method for Guild Data
 intents = discord.Intents.all() # Declare Intents
 load_dotenv() # Take enviornment variables from .env file
 
@@ -44,8 +43,8 @@ client = commands.Bot(command_prefix=prefix, case_insensitive=True, intents=inte
 client.remove_command('help')
 
 
-def initialize_guild_data(guild_obj, should_save=False):
-    guild_data.set_guild(guild_obj=guild_data)
+def initialize_guild_data(guild_obj: discord.Guild) -> None:
+    GuildData.initialize_guild(guild_obj)
 
     # Temp Data
     guilds[guild_obj.id] = {
@@ -73,13 +72,11 @@ async def on_ready():
     for guild in client.guilds: # Loop through guilds
         initialize_guild_data(guild) # Initialize Temp Guild Data
 
-    guild_data._save() # Save in case we joined new guilds
-
 
 # On reaction Event
 @client.event
-async def on_raw_reaction_add(ctx):
-    if ctx.message_id in guild_data.roles_dict:
+async def on_raw_reaction_add(ctx: commands.Context):
+    if ctx.message_id in roles_dict:
         guild = discord.utils.find(lambda g: g.id == ctx.guild_id, client.guilds)
         role = discord.utils.find(lambda r: r.name == ctx.emoji.name, guild.roles)
         if role is not None:
@@ -90,9 +87,9 @@ async def on_raw_reaction_add(ctx):
 
 # Remove reaction Event
 @client.event
-async def on_raw_reaction_remove(ctx):
+async def on_raw_reaction_remove(ctx: commands.Context):
     # Check if the message id is the same as the roles_msg_id
-    if ctx.message_id in guild_data.roles_dict:
+    if ctx.message_id in roles_dict:
         # Get guild, role and then remove the role
         local_guild_id = ctx.guild_id
         guild = discord.utils.find(lambda g: g.id == local_guild_id, client.guilds)
@@ -104,7 +101,7 @@ async def on_raw_reaction_remove(ctx):
 
 
 # @param attach_array: The array with the file attachments
-async def convert_to_file(attach_array):
+async def convert_to_file(attach_array: list):
     attachments: list = [] # array containingn attachments
 
     for x in attach_array: # Loop through attachments parameter
@@ -116,7 +113,7 @@ async def convert_to_file(attach_array):
 
 
 @client.event
-async def on_message_delete(message):
+async def on_message_delete(message: discord.Message):
     embed = functions.create_embed(
         "Message Deleted:",
         f"User `{message.author.display_name}`'s deleted their message"
@@ -134,7 +131,7 @@ async def on_message_delete(message):
 
 
 @client.event
-async def on_message_edit(before, after):
+async def on_message_edit(before: discord.Message, after: discord.Message):
     embed = functions.create_embed(
         "Message Edited",
         f"User `{before.author.display_name}` edited their message"
@@ -157,9 +154,8 @@ async def on_message_edit(before, after):
 
 # Add it to the guilds event
 @client.event
-async def on_guild_join(ctx):
+async def on_guild_join(ctx: commands.Context):
     initialize_guild_data(ctx.guild)
-    guild_data._save() # Save new guild info to file
 
 
 #
@@ -176,7 +172,7 @@ async def on_guild_join(ctx):
 # Check if the command runner is the bots owner
 @commands.check(functions.is_bot_owner)
 # Load function
-async def load(ctx, extension):
+async def load(ctx: commands.Context, extension: str):
     # Print and tell the console that the command was loaded
     print("Loaded" + extension)
 
@@ -196,7 +192,7 @@ async def load(ctx, extension):
 # Check if the command can be ran and who is running the command
 @commands.check(functions.is_bot_owner)
 # Load function
-async def unload(ctx, extension):
+async def unload(ctx: commands.Context, extension: str):
     # Tell the console that the command was unloaded
     print("Unloaded" + extension)
 
@@ -216,7 +212,7 @@ async def unload(ctx, extension):
 # Check if the command can be ran and who is running the command
 @commands.check(functions.is_bot_owner)
 # Reload function
-async def reload(ctx, extension):
+async def reload(ctx: commands.Context, extension: str):
     # Tell the console that the command was reloaded
     print("Reloaded" + extension)
 

@@ -4,13 +4,13 @@ from discord.ext import tasks, commands
 # Import time for time stat
 import datetime
 from pytz import timezone
-from modules.json_handler import GuildData
+from modules.data_handler import GuildData # Get instance of guild data
 
 # Covid Stats
 from lxml import html
 import requests
 
-from Data.functions import create_embed, get_fact
+from modules.functions import create_embed, get_fact
 
 # List containing all the titles that we will get the data for
 text_list = ["Currently Infected", "Mild Condition", "Serious or Critical",
@@ -21,14 +21,13 @@ timezones = ["US/Central", "US/Pacific", "Canada/Eastern",
 
 embed_const = "```{}```"
 
-guild_data = GuildData() # Get instance of guild data
 timezones.sort() # Sort the list
 
 
 class Stats(commands.Cog):
 
     # The first thing that happens when this class is called
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
         self.stat.start()
         self.get_fact_of_day.start()
@@ -39,7 +38,7 @@ class Stats(commands.Cog):
 
     # Ping command - Tells the ping of the bot
     @commands.command(name="Ping", description="Ping")
-    async def ping(self, ctx):
+    async def ping(self, ctx: commands.Context):
         msg = await ctx.message.channel.send("Ping?")
         str_time = str(msg.created_at - ctx.message.created_at)
         timestamp = str_time.strip("0:.")
@@ -52,21 +51,24 @@ class Stats(commands.Cog):
         # Get current time
         source_date = datetime.datetime.now()
         source = timezone("Canada/Eastern").localize(source_date)
-
-
+        # New Brunswick Time
         nb_time = (source.astimezone(timezone("Canada/Eastern")) + datetime.timedelta(hours=1)).strftime("%I:%M %p")
 
         # Get the message with message id
         for guild in self.client.guilds:
-            if current_guild_settings := guild_data.get_guild_data(guild_obj=guild) is None: 
+
+            # Guild Checks
+            if (current_guild_settings := GuildData.get_guild_data(guild_obj=guild)) is None:
                 return
+            if (stats_channel_id := current_guild_settings["stats_channel_id"]) == 0: # Skip this guild if stats_channel was not filled
+                continue;
            
             # Create discord Embed
             embed = create_embed(
                 "Server Status",
                 f"""Members: {guild.member_count}\n
                 https://discord.gg/ZCvcu36\n
-                Region: {self.guild.region}\n\n
+                ID: {guild.id}\n\n
                 **Server Time**""",
             )
 
@@ -86,24 +88,22 @@ class Stats(commands.Cog):
                     inline=True
                 )
 
-            if (stats_channel_id := current_guild_settings["stats_channel_id"]) == 0: # Skip this guild if stats_channel was not filled
-                continue;
 
-            stat_channel = self.client.get_channel(stats_channel_id)
+            stat_channel = self.client.get_channel(stats_channel_id) # Get the stat channel
             
             try: # Fetch the message
                 msg = await stat_channel.fetch_message(current_guild_settings["stats_message_id"])
             except discord.NotFound: # Message not found
                 msg = await stat_channel.send("stats") # Send an empty message
-                guild_data.edit_guild_settings(guild,
+                GuildData.edit_guild_settings(guild,
                     {"stats_message_id": msg.id}
                 )
             except Exception as err:
                 print(err)
                 return
     
-        # edit the message
-        await msg.edit(embed=embed)
+            # edit the message
+            await msg.edit(embed=embed)
 
 
     @stat.before_loop
@@ -117,7 +117,7 @@ class Stats(commands.Cog):
 
         # Loop through guilds and send fact of the day for guild
         for guild in self.client.guilds:
-            if current_guild_settings := guild_data.get_guild_data(guild_obj=guild) is not None:
+            if (current_guild_settings := GuildData.get_guild_data(guild_obj=guild)) is not None:
                 fact_channel_id = current_guild_settings["fact_channel_id"]
 
                 if fact_channel_id is not None and fact_channel_id  != 0:
@@ -132,7 +132,7 @@ class Stats(commands.Cog):
 
 
     @commands.command(name="CovidStats", description="Give the covid statistics", aliases=["covid", "cstats"])
-    async def covidstats(self, ctx):
+    async def covidstats(self, ctx: commands.Context):
         page = requests.get("https://www.worldometers.info/coronavirus/coronavirus-cases/")
         tree = html.fromstring(page.content)
 
@@ -154,5 +154,5 @@ class Stats(commands.Cog):
         await ctx.send(embed=embed)
 
 
-async def setup(client):
+async def setup(client: discord.Client):
     await client.add_cog(Stats(client))
