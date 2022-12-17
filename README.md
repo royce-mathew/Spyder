@@ -1,12 +1,75 @@
-# Spyder
-A bot written in python, for discord, being hosted on a raspberry pi. Written to increase my knowledge on python and also so I can play around with it a bit.
+# Spyder 
+<div align="center">
+    <a href="https://github.com/royce-mathew/Spyder">
+    <img src="https://cdn.discordapp.com/app-icons/730171191632986234/beda4acd239d66c261541edad187e95e.png" alt="Spyder" height="100" />
+    <a/>
+    <p>
+      Bot written in Python, being hosted on a Raspberry Pi
+    </p>
+</div>
 
-### **Git Useful Commands**
+<hr />
+
+## Features
+- 🔨 **Moderation Commands**
+- ✅ **User Verification**
+- 🎵 **Music Commands**
+
+# Installation
+Ensure you have [Python 3.9+](https://www.python.org/downloads/) Installed.
+
+Ensure you have [Pip](https://pip.pypa.io/en/stable/installation/) Installed and on your Path.
+
+Navigate to the folder where the bot is located and run the following command in your terminal of choice.
+
+### Linux / MacOs <br/>
+Installing Pip: `python3 -m pip install`
+```console
+python3 setup.py 
+```
+### Windows <br/>
+Pip Installation: `python -m pip install`
+```console
+python setup.py
+```
+After running the command, setup will ask you to create a `.env` file. <br/>
+This file is where *DISCORD_TOKEN* is stored. Your discord app token can be retrieved [here](https://discord.com/developers/)<br/><br/>
+
+After entering your bot token, the setup will download all the required modules / packages for this file with pip.
+
+
+# Commands
+## Moderation Commands
 Commands | Details
 ------------ | -------------
-git add . | The git add command adds a change in the working directory to the staging area.
-git commit -m `write changes here` | Takes the staged snapshot and commits it to the project history.
-git push origin master | git push origin master will push changes from the local master branch to the remote master branch.
-git rm --cached -r `. or "filename"` | Removes everything from the staging area, leaving it on the filesystem, useful for new gitignores. the "." removes everything, adding a filename only removes the filename file in the staging area
+**mute** username/userid | Mute the specified user
+**unmute** username/userid | Unmute the specified user
+**nick** username/userid | Set the nickname of the specified user
+**register** | register the current user in the database
 
+## Music Commands
+Commands | Details
+------------ | -------------
+**play** youtube_url | Play the specified youtube song
+**pause** | Pause the current song
+**resume** | Resume the current song
+**stop** | Stop playing music and disconnect from voice channel
+**queue** | Display the song queue
+**playing** | Display the current playing song
+
+## Developer Commands
+Commands | Details
+------------ | -------------
+**load** command | Load the specified command
+**unload** command | Unload the specified command
+**reload** command | Reload the specified command
+
+## Other Commands
+Commands | Details
+------------ | -------------
+**help** | Display all commands
+**getfact** | Get a random fact of the day
+**personalitytest** | Test the personality of a user, saves the userdata after the user run's the command the first time
+**covidstats** | Get the Covid-19 Statistics and compare it to when the last time the command was ran
+**ping** | Get the ping of the bot
 
