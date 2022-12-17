@@ -11,9 +11,10 @@
 <hr />
 
 ## Features
-- 🔨 **Moderation Commands**
-- ✅ **User Verification**
-- 🎵 **Music Commands**
+- 🔨 **Moderation Commands**: Powerful moderation commands!
+- ✅ **User Verification**: Verify users according to custom Conditions!
+- 🎵 **Music Commands**: Listen to Music whenever you want!
+- 💾 **Datastore**: All Data is stored on a local datastore with [LevelDB](https://github.com/google/leveldb)
 
 # Installation
 Ensure you have [Python 3.9+](https://www.python.org/downloads/) Installed.
@@ -72,4 +73,3 @@ Commands | Details
 **personalitytest** | Test the personality of a user, saves the userdata after the user run's the command the first time
 **covidstats** | Get the Covid-19 Statistics and compare it to when the last time the command was ran
 **ping** | Get the ping of the bot
-
