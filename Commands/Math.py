@@ -7,12 +7,12 @@ command_format = "\n\nPlease check your format:\n\t- Are the values formatted in
 
 class Math(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.command(name="GetFactor",
                       description="Give three numbers seperated by spaces to get the factor of a trinomial")
-    async def getFactor(self, ctx, arg0, arg1, arg2):
+    async def getFactor(self, ctx: commands.Context, arg0, arg1, arg2):
         try:
             # Convert args to int
             arg0, arg1, arg2 = int(arg0), int(arg1), int(arg2)
@@ -58,5 +58,5 @@ class Math(commands.Cog):
             await ctx.send(command_format)
 
 
-async def setup(client):
+async def setup(client: discord.Client):
     await client.add_cog(Math(client))

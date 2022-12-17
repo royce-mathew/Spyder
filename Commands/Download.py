@@ -1,17 +1,18 @@
-import os
+import discord
 from discord.ext import commands
+import os
 
 # current_path = os.path.dirname(os.path.realpath(__file__))
 # exc_path = current_path + '/geckodriver'
 
 
 class Download(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.command(name="Download",
                       description="Downloads a video from the specified list")
-    async def download(self, ctx, arg1, arg2):
+    async def download(self, ctx: discord.Client, arg1: str, arg2: str):
         # 2 args need to be passed:
         # The host: Instagram, facebook
         # The link
@@ -26,5 +27,5 @@ class Download(commands.Cog):
         #elif host == "yt" or host == "youtube":
 
 
-async def setup(client):
+async def setup(client: discord.Client):
     await client.add_cog(Download(client))
