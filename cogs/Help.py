@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from modules.functions import create_embed
-
 from modules.data_handler import GuildData
 
 

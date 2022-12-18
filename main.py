@@ -1,9 +1,6 @@
 # Variables
 prefix = "!"
 
-# Dicts
-guilds = {} # Stores Temp Data about Guilds
-
 #     _____                                _        
 #    |_   _|                              | |       
 #      | |  _ __ ___   _ __    ___   _ __ | |_  ___ 
@@ -20,7 +17,6 @@ import os
 from dotenv import load_dotenv
 import discord
 from discord.ext import commands # We import commands and tasks from discord ext
-import json
 
 # Run __init__ method for Guild Data is ran in the json_handler class
 from modules.data_handler import GuildData, roles_dict
@@ -43,18 +39,6 @@ client = commands.Bot(command_prefix=prefix, case_insensitive=True, intents=inte
 client.remove_command('help')
 
 
-def initialize_guild_data(guild_obj: discord.Guild) -> None:
-    GuildData.initialize_guild(guild_obj)
-
-    # Temp Data
-    guilds[guild_obj.id] = {
-       "playing": False,
-       "channel_id": None,
-       "queue": [],
-        "id": guild_obj.id,
-        "obj": guild_obj
-    }
-
 
 #     _____                    _
 #    |  ___|                  | |       
@@ -70,7 +54,7 @@ def initialize_guild_data(guild_obj: discord.Guild) -> None:
 async def on_ready():
     print("Bot is online")
     for guild in client.guilds: # Loop through guilds
-        initialize_guild_data(guild) # Initialize Temp Guild Data
+        GuildData.initialize_guild(guild) # Initialize Temp Guild Data
 
 
 # On reaction Event
@@ -143,7 +127,7 @@ async def on_message_edit(before: discord.Message, after: discord.Message):
 
     embed.add_field(name="Before", value=bf, inline=True)
     embed.add_field(name="After", value=af, inline=True)
-    embed.add_field(name="Channel", value=f"```{before.channel.name}```")
+    embed.add_field(name="Channel", value=f"```{before.channel.name}`guilds``")
     channel = discord.utils.get(before.guild.text_channels, name="chatlogs")
 
     # Convert attachments to file
@@ -155,7 +139,7 @@ async def on_message_edit(before: discord.Message, after: discord.Message):
 # Add it to the guilds event
 @client.event
 async def on_guild_join(ctx: commands.Context):
-    initialize_guild_data(ctx.guild)
+    GuildData.initialize_guild(ctx.guild) # Initialize New Guild Data
 
 
 #
