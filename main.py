@@ -151,64 +151,37 @@ async def on_guild_join(ctx: commands.Context):
 #     \____/ \___/ |_| |_| |_||_| |_| |_| \__,_||_| |_| \__,_||___/
 #                                                                 
 
-# Load Command
+# Load Command : Loads the Cog Specified
 @client.command(name="Load", description="Loads a command")
-# Check if the command runner is the bots owner
-@commands.check(functions.is_bot_owner)
-# Load function
+@commands.check(functions.is_bot_owner) # Check bot owner
 async def load(ctx: commands.Context, extension: str):
-    # Print and tell the console that the command was loaded
-    print("Loaded" + extension)
-
-    # Load the file
-    await client.load_extension(f'cog.{extension}')
-
-    # Create an embed and send it
-    embed = functions.create_embed(
-        "Loaded",
-        f"Command `{extension}` has been loaded."
-    )
+    extension = extension.lower().capitalize() # Reformat Extension
+    print(f"Loaded {extension}") # Print and tell the console that the command was loaded
+    await client.load_extension(f'cogs.{extension}') # Load the file
+    embed = functions.create_embed("Loaded", f"Command `{extension}` has been loaded.") # Create and send embed
     await ctx.send(embed)
 
 
-# Unload Command
+# Unload Command: Unloads the Cog specified
 @client.command(name="Unload", description="Unloads a command")
-# Check if the command can be ran and who is running the command
 @commands.check(functions.is_bot_owner)
-# Load function
-async def unload(ctx: commands.Context, extension: str):
-    # Tell the console that the command was unloaded
-    print("Unloaded" + extension)
-
-    # Unload the file
-    await client.unload_extension(f'cog.{extension}')
-
-    # Create a embed and send it
-    embed = functions.create_embed(
-        "Unloaded",
-        f"Command `{extension}` has been unloaded."
-    )
-    await ctx.send(embed)
+async def unload(ctx: commands.Context, extension: str): # Unload Method
+    extension = extension.lower().capitalize()
+    print(f"Unloaded {extension}")  # Tell the console that the command was unloaded
+    await client.unload_extension(f'cogs.{extension}') # Unload the file
+    embed = functions.create_embed("Unloaded", f"Command `{extension}` has been unloaded.")
+    await ctx.send(embed=embed)
 
 
-# Reload Command
+# Reload Command: Reloads the Cog Specified
 @client.command(name="Reload", description="Reloads a command")
-# Check if the command can be ran and who is running the command
 @commands.check(functions.is_bot_owner)
-# Reload function
 async def reload(ctx: commands.Context, extension: str):
-    # Tell the console that the command was reloaded
-    print("Reloaded" + extension)
-
-    # Reload the file 
-    await client.reload_extension(f'cog.{extension}')
-
-    # Make an embed and send it
-    embed = functions.create_embed(
-        "Reloaded",
-        f"Command `{extension}` has been reloaded."
-    )
-    await ctx.send(embed)
+    extension = extension.lower().capitalize()
+    print(f"Reloaded {extension}")    
+    await client.reload_extension(f'cogs.{extension}') # Reload the file 
+    embed = functions.create_embed("Reloaded", f"Command `{extension}` has been reloaded.")
+    await ctx.send(embed=embed)
 
 
 #

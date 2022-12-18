@@ -21,7 +21,7 @@ guild_music_default: dict =  {
 ytdl_options = { # Youtube-DL+ Options
     'format': 'bestaudio/best',
     'default_search': 'ytsearch',
-    'verbose': True,
+    'verbose': False, # Debug information
     'noplaylist': True,
     'max_filesize': 100000000
 }
@@ -31,16 +31,15 @@ ffmpeg_options = {
     'options': '-vn'
 }
 
-def set_guild_video_data(url, guild_data):
+def get_video_data(url, guild_data):
     with yt_dlp.YoutubeDL(ytdl_options) as ydl:
         info_dict = ydl.extract_info(url, download=False)  # Extract info from video
-        print(info_dict['url'])
-        guild_data["queue"].append({
+        return {
             "audio_id": info_dict.get("id", None),
             "audio_title": info_dict.get('title', None),
             "audio_url": info_dict.get('url', None),
             "audio_duration": info_dict.get('duration', None),
-        })
+        }
 
 
 class Music(commands.Cog):
@@ -97,23 +96,24 @@ class Music(commands.Cog):
             pass
 
         message = await ctx.send(embed=functions.create_embed("Setting Song!",  f"Song: `{url}` is now being extracted!. The music will automatically start playing as soon as the extraction finishes."))
+        video_data = get_video_data(url, guild_data) # Get the video data
+        
+        if video_data["audio_duration"] > 3600: # Bigger than 1 hour
+            await message.edit(embed=functions.create_embed("Error", f"Song: `{video_data['audio_title']}` can not be played as its duration is too long. \n\nMax Duration is : `1 hour`."))
+            return
+            
+        # Check if we are already playing music
+        if len(guild_data["queue"]) > 0 or guild_data["currently_playing"] is not None:
+            await message.edit(embed=functions.create_embed("Added To Queue", f"Song: `{video_data['audio_title']}` was added to queue."))
+        # Not already playing music, song will be added to queue
+        else:
+            await message.edit(embed=functions.create_embed("Now Playing!", f"`{video_data['audio_title']}` is now playing!"))
 
-        set_guild_video_data(url, guild_data) # Add song to queue
-        guild_data["voice_channel"] = channel
-        await self.connect_to_voice(ctx.guild, guild_data)
-
-        # Check if there is a queue
-        if len(guild_data["queue"]) > 0:
-            try:
-                if guild_data["queue"][-1]["audio_duration"] > 3600:
-                    await message.edit(embed=functions.create_embed("Error", f"Song: `{guild_data['queue'][-1]['audio_title']}` can not be played as its duration is too long. \n\nMax Duration is : `1 hour`."))
-                    return
-
-                await message.edit(embed=functions.create_embed("Added To Queue", f"Song: `{guild_data['queue'][-1]['audio_title']}` was added to queue."))
-            except TypeError:
-                await message.edit(embed=functions.create_embed("Error", f"An error occured, guild_data['queue'][-1]['audio_duration'] could not be accessed"))
-        else:  # There is nothing in the queue
-            await message.edit(embed=functions.create_embed("Now Playing!", f"`{guild_data['queue'][0]['audio_title']}` is now playing!"))
+        if guild_data["voice_client"] is None:
+            guild_data["voice_channel"] = channel # Set the voice channel
+            await self.connect_to_voice(ctx.guild, guild_data) # Join the voice channel
+        guild_data["queue"].append(video_data) # Adding to queue should automatically make it join the voice channel
+            
 
 
     @commands.command(name="stop", description="Stops the current music. Disconnects the bot", aliases=["disconnect"])
@@ -143,7 +143,7 @@ class Music(commands.Cog):
         except (KeyError, AttributeError) as Err:
             await ctx.send(embed=functions.create_embed("Error", f"Bot is not currently in a voice channel. Run the `play` command to play music."))
 
-    @commands.command(name="resume", description="Resumes the current music.")
+    @commands.command(name="resume", description="Resumes the current music.", aliases=["unpause"])
     async def resume(self, ctx):
         guild_data = music_guilds[ctx.guild.id]
         try:
@@ -237,10 +237,12 @@ class Music(commands.Cog):
                         voice_client.play(discord.FFmpegPCMAudio(music_data["audio_url"], **ffmpeg_options)) 
                         guild_list["currently_playing"] = guild_list["queue"].pop(0) # Delete current song From Queue
                     else:
-                        await voice_client.disconnect()
+                        guild_list["queue"].clear() # Empty the queue
+                        guild_list["currently_playing"] = None
+                        await guild_list["voice_client"].disconnect() # Disconnect Voice Client
 
             except (KeyError, AttributeError) as Err:
-                print(Err)
+                # print(Err)
                 pass
     
     @audio_player_task.before_loop

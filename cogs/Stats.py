@@ -32,10 +32,6 @@ class Stats(commands.Cog):
         self.stat.start()
         self.get_fact_of_day.start()
 
-    def cog_unload(self):
-        self.stat.cancel()
-        self.get_fact_of_day.cancel()
-
     # Ping command - Tells the ping of the bot
     @commands.command(name="Ping", description="Ping")
     async def ping(self, ctx: commands.Context):
@@ -62,13 +58,15 @@ class Stats(commands.Cog):
                 return
             if (stats_channel_id := current_guild_settings["stats_channel_id"]) == 0: # Skip this guild if stats_channel was not filled
                 continue;
-           
+            if (stats_message_id := current_guild_settings["stats_message_id"]) == 0:
+                continue;
+
             # Create discord Embed
             embed = create_embed(
                 "Server Status",
-                f"""Members: {guild.member_count}\n
-                https://discord.gg/ZCvcu36\n
-                ID: {guild.id}\n\n
+                f"""Members: `{guild.member_count}`
+                https://discord.gg/ZCvcu36
+                ID: {guild.id}\n
                 **Server Time**""",
             )
 
@@ -88,11 +86,10 @@ class Stats(commands.Cog):
                     inline=True
                 )
 
-
-            stat_channel = self.client.get_channel(stats_channel_id) # Get the stat channel
             
             try: # Fetch the message
-                msg = await stat_channel.fetch_message(current_guild_settings["stats_message_id"])
+                stat_channel = self.client.get_channel(int(stats_channel_id)) # Get the stat channel
+                msg = await stat_channel.fetch_message(int(stats_message_id))
             except discord.NotFound: # Message not found
                 msg = await stat_channel.send("stats") # Send an empty message
                 GuildData.edit_guild_settings(guild,

@@ -67,15 +67,17 @@ class GuildData:
         guild_data.put(str_id.encode(), serialized_value) # Put value in database
 
 
-    def edit_guild_settings(guild_obj: discord.Guild, edit_info: dict):
+    def edit_guild_settings(guild_obj: discord.Guild, edit_info: dict) -> bool:
         str_id = str(guild_obj.id)
 
         local_data = GuildData.get_guild_data(guild_obj)
-        if local_data is None: return;
+        if local_data is None: return 0; # Invalid Data
 
         for key, value in edit_info.items(): # Type check things
             if key in valid_guild_keys:
                 local_data[key] = value;
+            else:
+                return 0;
 
         # Set values for guild
         roles_dict[local_data["roles_message_id"]] = str_id # Link Back to Guild
@@ -83,4 +85,8 @@ class GuildData:
 
         serialized_value = pickle.dumps(local_data) # Serialize Dictionary
         guild_data.put(str_id.encode(), serialized_value) # Put value in database
+        return 1;
+
+    def get_valid_keys():
+        return valid_guild_keys;
         
