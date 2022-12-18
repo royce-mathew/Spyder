@@ -51,7 +51,9 @@ Commands | Details
 **mute** username/userid | Mute the specified user
 **unmute** username/userid | Unmute the specified user
 **nick** username/userid | Set the nickname of the specified user
-**register** | register the current user in the database
+**register** | Register the current user in the database
+**settings** | View the current settings for this guild
+**setup** | Change the settings for this guild 
 
 ## Music Commands
 Commands | Details
@@ -62,6 +64,7 @@ Commands | Details
 **stop** | Stop playing music and disconnect from voice channel
 **queue** | Display the song queue
 **playing** | Display the current playing song
+**shuffle** | Shuffle the current queue
 
 ## Developer Commands
 Commands | Details
