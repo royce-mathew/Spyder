@@ -75,16 +75,31 @@ class Moderation(commands.Cog):
         )
 
 
-    @commands.command(name="setup", description="Setup the current server for the bot")
-    async def setup(self, ctx: commands.Context):
-        pass;
+    @commands.command(name="setup", description="Setup the current server for the bot", aliases=["set"])
+    @commands.check(functions.is_server_admin)
+    async def setup(self, ctx: commands.Context, specific_command: str = None, set_to: str = None):
+        if specific_command is not None and set_to is not None:
+            # Set the server's data to the specific command that was passed
+            if GuildData.edit_guild_settings(ctx.guild, {  specific_command: set_to }) == 0:
+                # Invalid Key set
+                embed_obj = functions.create_embed("Invalid Arguments", f"The argument that you passed was invalid.\n\nValid Keys:")
+                for key, value in GuildData.get_valid_keys().items():
+                    embed_obj.add_field(name=f"** ❯ {key.replace('_', ' ').capitalize()} **", value=f"Key: `{key}`\tType: `{value}`", inline=False)
+                await ctx.send(embed=embed_obj)
+            else:
+                await ctx.send(embed=functions.create_embed("Success", f"The key {specific_command} was set to {set_to}"))
+        else:
+            embed_obj = functions.create_embed("Invalid Arguments", f"Please pass two arguments to this command: (`command_to_set`, `value_to_set_to`).\n\nValid Keys:")
+            for key, value in GuildData.get_valid_keys().items():
+                embed_obj.add_field(name=f"** ❯ {key.replace('_', ' ').capitalize()} **", value=f"Key: `{key}`\tType: `{value}`", inline=False)
+
+            await ctx.send(embed=embed_obj)
 
     @commands.command(name="register", description="Register for using commands that store data")
     async def register(self, ctx: commands.Context):
         author: discord.Message.author = ctx.message.author # Message Author
         user_id: str = str(author.id) # Author ID converted to String
         role: discord.Role = discord.utils.find(lambda r: r.name == "Verified", ctx.guild.roles) # Find verified role in the Guild
-
 
         # CHECKS
         # Check if user already has role
