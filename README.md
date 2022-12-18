@@ -39,6 +39,11 @@ This file is where *DISCORD_TOKEN* is stored. Your discord app token can be retr
 After entering your bot token, the setup will download all the required modules / packages for this file with pip.
 
 
+# Development
+To Start Contributing, all you'll need is Git, Python and a editor of your choice! After making significant changes, submit a pull request to start contributing!
+
+If you'd like to set up a virtual environment, follow this tutorial [here](https://docs.python.org/3/library/venv.html)
+
 # Commands
 ## Moderation Commands
 Commands | Details
