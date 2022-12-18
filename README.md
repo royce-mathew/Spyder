@@ -53,7 +53,7 @@ Commands | Details
 **nick** username/userid | Set the nickname of the specified user
 **register** | Register the current user in the database
 **settings** | View the current settings for this guild
-**setup** | Change the settings for this guild 
+**setup** key value | Change the settings for this guild 
 
 ## Music Commands
 Commands | Details
