@@ -61,7 +61,6 @@ class Moderation(commands.Cog):
                    # Default value for nickname
                    new_nickname=f"User_{random.randrange(1000, 100000)}"):
 
-
         if member is None:
             await ctx.send("Member / Nickname was not passed")
             return
@@ -94,6 +93,17 @@ class Moderation(commands.Cog):
                 embed_obj.add_field(name=f"** ❯ {key.replace('_', ' ').capitalize()} **", value=f"Key: `{key}`\tType: `{value}`", inline=False)
 
             await ctx.send(embed=embed_obj)
+
+    @commands.command(name="settings", description="View the current settings in your server")
+    @commands.check(functions.is_server_admin)
+    async def settings(self, ctx: commands.Context):
+        embed_obj = functions.create_embed("Settings", f"These are the following settings for this guild. To change the settings for your server, use the `setup` command.")
+        for key, value in GuildData.get_guild_data(ctx.guild).items():
+            embed_obj.add_field(name=f"** ❯ {key.replace('_', ' ').capitalize()} **", value=f"`{value}`", inline=False)
+
+        await ctx.send(embed=embed_obj)
+
+
 
     @commands.command(name="register", description="Register for using commands that store data")
     async def register(self, ctx: commands.Context):
