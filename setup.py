@@ -12,6 +12,13 @@ def main():
     print("Downloading All required packages")
     if running_in_virtualenv:
         print("Detected Running in Virtual Environment")
+
+    # Check if ffmpeg is installed to path
+    try:
+        subprocess.check_call(["ffmpeg", "-version"])
+    except subprocess.CalledProcessError as err:
+        print("You do not have ffmpeg installed to path.")
+        return
     
     subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
 
