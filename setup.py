@@ -7,11 +7,12 @@ running_in_virtualenv = "VIRTUAL_ENV" in os.environ
 
 def main():
     print("First Time Setup...")
+    print("On some distributions you might need to install the libleveldb-dev package to run plyvel")
 
     print("Downloading All required packages")
     if running_in_virtualenv:
         print("Detected Running in Virtual Environment")
-
+    
     subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
 
     print("\n\nSetting Discord Token:")
