@@ -98,42 +98,51 @@ async def convert_to_file(attach_array: list):
 
 @client.event
 async def on_message_delete(message: discord.Message):
-    embed = functions.create_embed(
-        "Message Deleted:",
-        f"User `{message.author.display_name}`'s deleted their message"
-    )
+    guild = message.guild
+    # CHECKS 
+    if message.bot == True: return;
+    log_channel_id = GuildData.get_value_default(guild, "chatlogs_channel_id", None) # Get chatlog ID in database
+    if log_channel_id is None:
+        log_channel = discord.utils.get(guild.text_channels, name="chatlogs"); # Try finding a channel called chatlogs
+    else:
+        log_channel = guild.get_channel(int(log_channel_id))
+        if log_channel is None:
+            return
 
-    content = f"```{message.content if message.content else ''}```"
+    embed = functions.create_embed("Message Deleted:", f"User `{message.author.display_name}`'s deleted their message")
+
+    content = f"```{message.content if message.content else 'None'}```"
     embed.add_field(name="Message Content", value=content, inline=True)
     embed.add_field(name="Channel", value="```{}```".format(message.channel.name))
     channel = discord.utils.get(message.guild.text_channels, name="chatlogs")
 
     # Convert attachments to file
     files = await convert_to_file(message.attachments)
-
     await channel.send(embed=embed, files=files)
 
 
 @client.event
 async def on_message_edit(before: discord.Message, after: discord.Message):
-    embed = functions.create_embed(
-        "Message Edited",
-        f"User `{before.author.display_name}` edited their message"
-    )
+    guild = before.guild;
+    log_channel_id = GuildData.get_value_default(guild, "chatlogs_channel_id", None) # Get chatlog ID in database
+    if log_channel_id is None:
+        log_channel = discord.utils.get(guild.text_channels, name="chatlogs"); # Try finding a channel called chatlogs
+    else:
+        log_channel = guild.get_channel(int(log_channel_id))
+        if log_channel is None:
+            return
 
-    # Needed or the embed messes up
-    bf = f"```{before.content if before.content else 'None'}```"
-    af = f"```{after.content if after.content else 'None'}```"
+    embed = functions.create_embed("Message Edited", f"User `{before.author.display_name}` edited their message")
 
-    embed.add_field(name="Before", value=bf, inline=True)
-    embed.add_field(name="After", value=af, inline=True)
-    embed.add_field(name="Channel", value=f"```{before.channel.name}`guilds``")
-    channel = discord.utils.get(before.guild.text_channels, name="chatlogs")
+    before_message = f"```{before.content if before.content else 'None'}```"
+    after_message = f"```{after.content if after.content else 'None'}```"
 
-    # Convert attachments to file
+    embed.add_field(name="Before", value=before_message, inline=True)
+    embed.add_field(name="After", value=after_message, inline=True)
+    embed.add_field(name="Channel", value=f"`{before.channel.name}`")
+
     files = await convert_to_file(before.attachments)
-
-    await channel.send(embed=embed, files=files)
+    await log_channel.send(embed=embed, files=files)
 
 
 # Add it to the guilds event

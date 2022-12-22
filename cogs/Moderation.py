@@ -83,14 +83,14 @@ class Moderation(commands.Cog):
                 # Invalid Key set
                 embed_obj = functions.create_embed("Invalid Arguments", f"The argument that you passed was invalid.\n\nValid Keys:")
                 for key, value in GuildData.get_valid_keys().items():
-                    embed_obj.add_field(name=f"** ❯ {key.replace('_', ' ').capitalize()} **", value=f"Key: `{key}`\tType: `{value}`", inline=False)
+                    embed_obj.add_field(name=f"** ❯ {key.replace('_', ' ').capitalize()} **", value=f"Key: `{key}`\tType: `{value}`", inline=True)
                 await ctx.send(embed=embed_obj)
             else:
                 await ctx.send(embed=functions.create_embed("Success", f"The key {specific_command} was set to {set_to}"))
         else:
-            embed_obj = functions.create_embed("Invalid Arguments", f"Please pass two arguments to this command: (`command_to_set`, `value_to_set_to`).\n\nValid Keys:")
+            embed_obj = functions.create_embed("Invalid Arguments", f"Please pass two arguments to this command: (`command_to_set`, `value_to_set_to`).\n\n```Valid Keys:```")
             for key, value in GuildData.get_valid_keys().items():
-                embed_obj.add_field(name=f"** ❯ {key.replace('_', ' ').capitalize()} **", value=f"Key: `{key}`\tType: `{value}`", inline=False)
+                embed_obj.add_field(name=f"** ❯ {key.replace('_', ' ').capitalize()} **", value=f"Key: `{key}`\nDefault: `{value}`", inline=True)
 
             await ctx.send(embed=embed_obj)
 
@@ -98,8 +98,13 @@ class Moderation(commands.Cog):
     @commands.check(functions.is_server_admin)
     async def settings(self, ctx: commands.Context):
         embed_obj = functions.create_embed("Settings", f"These are the following settings for this guild. To change the settings for your server, use the `setup` command.")
-        for key, value in GuildData.get_guild_data(ctx.guild).items():
-            embed_obj.add_field(name=f"** ❯ {key.replace('_', ' ').capitalize()} **", value=f"`{value}`", inline=False)
+        local_data = GuildData.get_guild_data(ctx.guild)
+        for key, default_value in GuildData.get_valid_keys().items():
+
+            if (value := local_data.get(key, None)) is None: # The key does not exist
+                value = default_value
+
+            embed_obj.add_field(name=f"❯ {key.replace('_', ' ').capitalize()}", value=f"```{value}```", inline=True)
 
         await ctx.send(embed=embed_obj)
 
@@ -115,10 +120,9 @@ class Moderation(commands.Cog):
         # Check if user already has role
         if (local_data := UserData.get_user_data(user_id)) is not None and local_data.get('name', None) is not None and role in author.roles:
             embed = functions.create_embed("Registered", "You are already registered")
-            await ctx.send(embed=embed)
             return
         # Check if terms of conditions were set up in this guild
-        if (local_guild_data := GuildData.get_guild_data(ctx.guild)) is None or (terms_of_conditions := local_guild_data.get("terms_and_conditions", None)) is None:
+        if (terms_of_conditions := GuildData.get_value(ctx.guild, "terms_and_conditions")) == "":
             embed = functions.create_embed("Terms and Conditions Not Setup", "Terms and Conditions were not set for this server. Please run the setup command to set variables for your server.")
             await ctx.send(embed=embed);
             return;

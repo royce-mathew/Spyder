@@ -12,6 +12,7 @@ valid_guild_keys: dict = {
     "stats_channel_id": 0,
     "stats_message_id": 0,
     "fact_channel_id": 0,
+    "chatlogs_channel_id": 0,
     "prefix": "!"
 }
 
@@ -27,6 +28,10 @@ print("Started Databases")
 # with guild_data.snapshot() as snap:
 #     for key, value in snap:
 #         print(f"{key} : {pickle.loads(value)}\n")
+
+# Exceptions
+class GuildDataNotFound:
+    pass
 
 
 class UserData:    
@@ -48,7 +53,7 @@ class GuildData:
         str_id = str(guild_obj.id).encode() # Convert guild id to bytes
         if (local_data := guild_data.get(str_id, default=None)) is not None:
             return pickle.loads(local_data)
-        else: return None
+        else: raise GuildDataNotFound
 
     def initialize_guild(guild_obj: discord.Guild):
         str_id = str(guild_obj.id);
@@ -71,13 +76,14 @@ class GuildData:
         str_id = str(guild_obj.id)
 
         local_data = GuildData.get_guild_data(guild_obj)
-        if local_data is None: return 0; # Invalid Data
+        if local_data is None:
+            raise GuildDataNotFound; # Invalid Data
 
         for key, value in edit_info.items(): # Type check things
             if key in valid_guild_keys:
                 local_data[key] = value;
             else:
-                return 0;
+                return 0; # Failure
 
         # Set values for guild
         roles_dict[local_data["roles_message_id"]] = str_id # Link Back to Guild
@@ -85,7 +91,21 @@ class GuildData:
 
         serialized_value = pickle.dumps(local_data) # Serialize Dictionary
         guild_data.put(str_id.encode(), serialized_value) # Put value in database
-        return 1;
+        return 1; # Return Success
+
+    def get_value(guild_obj: discord.Guild, key: str):
+        if (local_data := GuildData.get_guild_data(guild_obj)) is not None:
+            if key in valid_guild_keys.keys() and (local_data.get(key, None) is None): # If Key does not exist, set the key
+                local_data[key] = valid_guild_keys[key]
+            return local_data[key];
+        raise GuildDataNotFound;
+
+    def get_value_default(guild_obj: discord.Guild, key: str, default_value):
+        if (local_data := GuildData.get_guild_data(guild_obj)) is not None:
+            if key in valid_guild_keys.keys():
+                return local_data.get(key, default_value);
+            return default_value; # Invalid Key
+        raise GuildDataNotFound
 
     def get_valid_keys():
         return valid_guild_keys;

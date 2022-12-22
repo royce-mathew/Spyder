@@ -12,8 +12,7 @@ class Help(commands.Cog):
 
     @commands.command(name="Help", description="Returns all the available commmands")
     async def help(self, ctx: commands.Context):
-        local_guild_data = GuildData.get_guild_data(ctx.guild)
-        prefix = local_guild_data["prefix"]
+        prefix = GuildData.get_value(ctx.guild, "prefix")
         embed = create_embed(
             "Help Command",
             f"These are the avaliable commands for **{ctx.guild.name}**\nThe client prefix is: `{prefix}`"

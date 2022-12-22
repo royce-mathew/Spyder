@@ -55,7 +55,7 @@ class Stats(commands.Cog):
 
             # Guild Checks
             if (current_guild_settings := GuildData.get_guild_data(guild_obj=guild)) is None:
-                return
+                continue;
             if (stats_channel_id := current_guild_settings["stats_channel_id"]) == 0: # Skip this guild if stats_channel was not filled
                 continue;
             if (stats_message_id := current_guild_settings["stats_message_id"]) == 0:
@@ -111,14 +111,10 @@ class Stats(commands.Cog):
     @tasks.loop(minutes=1440)
     async def get_fact_of_day(self):
         embed = create_embed("Fact of the Day", f"```{get_fact()}```")
-
         # Loop through guilds and send fact of the day for guild
         for guild in self.client.guilds:
-            if (current_guild_settings := GuildData.get_guild_data(guild_obj=guild)) is not None:
-                fact_channel_id = current_guild_settings["fact_channel_id"]
-
-                if fact_channel_id is not None and fact_channel_id  != 0:
-                    channel = self.client.get_channel(fact_channel_id)
+            if (fact_channel_id := GuildData.get_value(guild, "fact_channel_id")) is not None:
+                if (channel := guild.get_channel(int(fact_channel_id))) is not None:
                     await channel.send(embed=embed)
 
     @get_fact_of_day.before_loop
