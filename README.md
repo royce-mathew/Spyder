@@ -10,10 +10,11 @@
 
 <hr />
 
-## Features
-- 🔨 **Moderation Commands**: Powerful moderation commands!
-- ✅ **User Verification**: Verify users according to custom Conditions!
-- 🎵 **Music Commands**: Listen to Music whenever you want!
+# Features
+- 🛠️ **Setting Commands**: Unique prefixes for guilds
+- 🔨 **Moderation Commands**: Powerful moderation commands
+- ✅ **User Verification**: Verify users according with custom Conditions
+- 🎵 **Music Commands**: Listen to Music whenever you want
 - 💾 **Datastore**: All Data is stored on a local datastore with [LevelDB](https://github.com/google/leveldb)
 
 # Installation
