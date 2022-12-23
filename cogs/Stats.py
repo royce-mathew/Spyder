@@ -10,7 +10,7 @@ from modules.data_handler import GuildData # Get instance of guild data
 from lxml import html
 import requests
 
-from modules.functions import create_embed, get_fact
+from modules.utils import create_embed, get_fact
 
 # List containing all the titles that we will get the data for
 text_list = ["Currently Infected", "Mild Condition", "Serious or Critical",

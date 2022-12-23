@@ -80,10 +80,10 @@ class GuildData:
             raise GuildDataNotFound; # Invalid Data
 
         for key, value in edit_info.items(): # Type check things
-            if key in valid_guild_keys:
+            if key in valid_guild_keys and type(value) == type(valid_guild_keys[key]):
                 local_data[key] = value;
             else:
-                return 0; # Failure
+                return 0; # Invalid Key
 
         # Set values for guild
         roles_dict[local_data["roles_message_id"]] = str_id # Link Back to Guild

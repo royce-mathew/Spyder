@@ -4,7 +4,7 @@ from modules.data_handler import UserData
 
 from random import randrange
 
-from modules.functions import get_fact, create_embed
+from modules.utils import get_fact, create_embed
 
 
 class Fun(commands.Cog):
