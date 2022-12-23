@@ -10,20 +10,6 @@ import json
 maincolor = 0x000
 avatar_url = "https://cdn.discordapp.com/avatars/730171191632986234/beda4acd239d66c261541edad187e95e.webp?size=1024"
 
-
-# Checks
-def is_bot_owner(ctx):
-    return ctx.message.author.id == 461509995444437003
-
-
-def is_server_owner(ctx):
-    return ctx.message.author == ctx.message.guild.owner
-
-
-def is_server_admin(ctx):
-    return ctx.message.author.guild_permissions.administrator
-
-
 def print_options():
     print("1. Settings")
     print("2. Run")

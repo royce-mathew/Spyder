@@ -10,7 +10,7 @@ prefix = "!"
 #                     | |                           
 #                     |_|                          
 #
-from modules import functions
+from modules.utils import create_embed
 
 import asyncio
 import os
@@ -32,9 +32,11 @@ load_dotenv() # Take enviornment variables from .env file
 #     \____/|_||_| \___||_| |_| \__|
 #                                  
 
+def get_prefix(client: discord.Client, message: discord.Message):
+    return GuildData.get_value(message.guild, "prefix")
 
 # Create a client
-client = commands.Bot(command_prefix=prefix, case_insensitive=True, intents=intents)
+client = commands.Bot(command_prefix=get_prefix, case_insensitive=True, intents=intents)
 # Remove the help command so we can send a custom help command
 client.remove_command('help')
 
@@ -109,7 +111,7 @@ async def on_message_delete(message: discord.Message):
         if log_channel is None:
             return
 
-    embed = functions.create_embed("Message Deleted:", f"User `{message.author.display_name}`'s deleted their message")
+    embed = create_embed("Message Deleted:", f"User `{message.author.display_name}`'s deleted their message")
 
     content = f"```{message.content if message.content else 'None'}```"
     embed.add_field(name="Message Content", value=content, inline=True)
@@ -132,7 +134,7 @@ async def on_message_edit(before: discord.Message, after: discord.Message):
         if log_channel is None:
             return
 
-    embed = functions.create_embed("Message Edited", f"User `{before.author.display_name}` edited their message")
+    embed = create_embed("Message Edited", f"User `{before.author.display_name}` edited their message")
 
     before_message = f"```{before.content if before.content else 'None'}```"
     after_message = f"```{after.content if after.content else 'None'}```"
@@ -162,34 +164,34 @@ async def on_guild_join(ctx: commands.Context):
 
 # Load Command : Loads the Cog Specified
 @client.command(name="Load", description="Loads a command")
-@commands.check(functions.is_bot_owner) # Check bot owner
+@commands.is_owner()
 async def load(ctx: commands.Context, extension: str):
     extension = extension.lower().capitalize() # Reformat Extension
     print(f"Loaded {extension}") # Print and tell the console that the command was loaded
     await client.load_extension(f'cogs.{extension}') # Load the file
-    embed = functions.create_embed("Loaded", f"Command `{extension}` has been loaded.") # Create and send embed
+    embed = create_embed("Loaded", f"Command `{extension}` has been loaded.") # Create and send embed
     await ctx.send(embed)
 
 
 # Unload Command: Unloads the Cog specified
 @client.command(name="Unload", description="Unloads a command")
-@commands.check(functions.is_bot_owner)
+@commands.is_owner()
 async def unload(ctx: commands.Context, extension: str): # Unload Method
     extension = extension.lower().capitalize()
     print(f"Unloaded {extension}")  # Tell the console that the command was unloaded
     await client.unload_extension(f'cogs.{extension}') # Unload the file
-    embed = functions.create_embed("Unloaded", f"Command `{extension}` has been unloaded.")
+    embed = create_embed("Unloaded", f"Command `{extension}` has been unloaded.")
     await ctx.send(embed=embed)
 
 
 # Reload Command: Reloads the Cog Specified
 @client.command(name="Reload", description="Reloads a command")
-@commands.check(functions.is_bot_owner)
+@commands.is_owner()
 async def reload(ctx: commands.Context, extension: str):
     extension = extension.lower().capitalize()
     print(f"Reloaded {extension}")    
     await client.reload_extension(f'cogs.{extension}') # Reload the file 
-    embed = functions.create_embed("Reloaded", f"Command `{extension}` has been reloaded.")
+    embed = create_embed("Reloaded", f"Command `{extension}` has been reloaded.")
     await ctx.send(embed=embed)
 
 
@@ -210,9 +212,16 @@ async def main():
         for filename in os.listdir("./cogs"):
             if filename.endswith(".py"):
                 name = len(filename) - 3; # Remove.py extension
-                await client.load_extension(f'cogs.{filename[0:name]}'); # Load the file
+                try:
+                    await client.load_extension(f'cogs.{filename[0:name]}'); # Load the file
+                except Exception as e:
+                    print(f"Unable to load Cog: [{filename}]")
 
         await client.start(os.getenv("DISCORD_TOKEN")) # Start the client 
 
 
-asyncio.run(main());
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
+    asyncio.run(client.close())
+    print("Closed Program")
