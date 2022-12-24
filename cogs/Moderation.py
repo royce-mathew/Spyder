@@ -83,7 +83,7 @@ class Moderation(commands.Cog):
     
         # Send initial message
         bot_message: discord.Message = await ctx.send(embed=create_embed("Registration Process", "This process may take a while."))
-        await asyncio.sleep(2) # Wait 2 seconds
+        await asyncio.sleep(0.5) # Wait 2 seconds
 
         # Name Prompt
         await bot_message.edit(embed=create_embed("Name", "Enter username, has to be an ascii character [A-Z,a-z] and under 10 characters"))
