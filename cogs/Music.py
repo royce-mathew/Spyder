@@ -143,7 +143,7 @@ class Music(commands.Cog):
         except (KeyError, AttributeError) as Err:
             await ctx.send(embed=create_embed("Error", f"Bot is not currently in a voice channel. Run the `play` command to play music."))
 
-    @commands.command(name="resume", description="Resumes the current music.", aliases=["unpause"])
+    @commands.command(name="Resume", description="Resumes the current music.", aliases=["unpause"])
     async def resume(self, ctx):
         guild_data = music_guilds[ctx.guild.id]
         try:

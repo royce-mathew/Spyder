@@ -136,6 +136,8 @@ async def on_message_edit(before: discord.Message, after: discord.Message):
 
     embed = create_embed("Message Edited", f"User `{before.author.display_name}` edited their message")
 
+    if before.content is None and after.content is None: return; # Skip if both values are None
+
     before_message = f"```{before.content if before.content else 'None'}```"
     after_message = f"```{after.content if after.content else 'None'}```"
 
