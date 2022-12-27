@@ -77,7 +77,7 @@ Commands | Details
 ## Other Commands
 Commands | Details
 ------------ | -------------
-**help** | Display all commands
+**help** `command_name` | Display all commands. Adding optional `command_name` lets you get help for the specified command
 **getfact** | Get a random fact of the day
 **personalitytest** | Test the personality of a user, saves the userdata after the user run's the command the first time
 **covidstats** | Get the Covid-19 Statistics and compare it to when the last time the command was ran

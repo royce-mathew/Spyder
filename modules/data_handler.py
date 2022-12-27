@@ -13,6 +13,7 @@ valid_guild_keys: dict = {
     "stats_message_id": 0,
     "fact_channel_id": 0,
     "chatlogs_channel_id": 0,
+    "moderation_logs_channel_id": 0,
     "prefix": "!",
     "terms_and_conditions": "",
 }

@@ -55,6 +55,7 @@ client.remove_command('help')
 @client.event
 async def on_ready():
     print("Bot is online")
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers")) # Set presence
     for guild in client.guilds: # Loop through guilds
         GuildData.initialize_guild(guild) # Initialize Temp Guild Data
 
@@ -105,7 +106,8 @@ async def on_message_delete(message: discord.Message):
     if message.bot == True: return;
     log_channel_id = GuildData.get_value_default(guild, "chatlogs_channel_id", None) # Get chatlog ID in database
     if log_channel_id is None:
-        log_channel = discord.utils.get(guild.text_channels, name="chatlogs"); # Try finding a channel called chatlogs
+        if (log_channel := discord.utils.get(guild.text_channels, name="chatlogs")) is not None: # Try finding a channel called chatlogs
+            return;
     else:
         log_channel = guild.get_channel(int(log_channel_id))
         if log_channel is None:
@@ -128,13 +130,16 @@ async def on_message_edit(before: discord.Message, after: discord.Message):
     guild = before.guild;
     log_channel_id = GuildData.get_value_default(guild, "chatlogs_channel_id", None) # Get chatlog ID in database
     if log_channel_id is None:
-        log_channel = discord.utils.get(guild.text_channels, name="chatlogs"); # Try finding a channel called chatlogs
+        if (log_channel := discord.utils.get(guild.text_channels, name="chatlogs")) is None: # Try finding a channel called chatlogs
+            return;
     else:
         log_channel = guild.get_channel(int(log_channel_id))
         if log_channel is None:
-            return
+            return;
 
     embed = create_embed("Message Edited", f"User `{before.author.display_name}` edited their message")
+
+    if before.content is None and after.content is None: return; # Skip if both values are None
 
     before_message = f"```{before.content if before.content else 'None'}```"
     after_message = f"```{after.content if after.content else 'None'}```"
@@ -150,6 +155,7 @@ async def on_message_edit(before: discord.Message, after: discord.Message):
 # Add it to the guilds event
 @client.event
 async def on_guild_join(ctx: commands.Context):
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers"))
     GuildData.initialize_guild(ctx.guild) # Initialize New Guild Data
 
 
