@@ -10,10 +10,11 @@
 
 <hr />
 
-## Features
-- 🔨 **Moderation Commands**: Powerful moderation commands!
-- ✅ **User Verification**: Verify users according to custom Conditions!
-- 🎵 **Music Commands**: Listen to Music whenever you want!
+# Features
+- 🛠️ **Setting Commands**: Unique prefixes for guilds
+- 🔨 **Moderation Commands**: Powerful moderation commands
+- ✅ **User Verification**: Verify users according with custom Conditions
+- 🎵 **Music Commands**: Listen to Music whenever you want
 - 💾 **Datastore**: All Data is stored on a local datastore with [LevelDB](https://github.com/google/leveldb)
 
 # Installation
@@ -76,7 +77,7 @@ Commands | Details
 ## Other Commands
 Commands | Details
 ------------ | -------------
-**help** | Display all commands
+**help** `command_name` | Display all commands. Adding optional `command_name` lets you get help for the specified command
 **getfact** | Get a random fact of the day
 **personalitytest** | Test the personality of a user, saves the userdata after the user run's the command the first time
 **covidstats** | Get the Covid-19 Statistics and compare it to when the last time the command was ran
