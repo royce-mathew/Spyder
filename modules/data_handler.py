@@ -55,7 +55,8 @@ class GuildData:
         str_id = str(guild_obj.id).encode() # Convert guild id to bytes
         if (local_data := guild_data.get(str_id, default=None)) is not None:
             return pickle.loads(local_data)
-        else: raise GuildDataNotFound
+        else:
+            return None
 
     def initialize_guild(guild_obj: discord.Guild):
         str_id = str(guild_obj.id);
@@ -82,10 +83,16 @@ class GuildData:
             raise GuildDataNotFound; # Invalid Data
 
         for key, value in edit_info.items(): # Type check things
-            if key in valid_guild_keys and type(value) == type(valid_guild_keys[key]):
+            if key in valid_guild_keys:
+                if type(valid_guild_keys[key]) == int:
+                    try:
+                        value = int(value)
+                    except:
+                        return False; # Error in Value Type
+                    
                 local_data[key] = value;
             else:
-                return 0; # Invalid Key
+                return False; # Invalid Key
 
         # Set values for guild
         roles_dict[local_data["roles_message_id"]] = str_id # Link Back to Guild
@@ -93,7 +100,7 @@ class GuildData:
 
         serialized_value = pickle.dumps(local_data) # Serialize Dictionary
         guild_data.put(str_id.encode(), serialized_value) # Put value in database
-        return 1; # Return Success
+        return True; # Return Success
 
     def get_value(guild_obj: discord.Guild, key: str):
         if (local_data := GuildData.get_guild_data(guild_obj)) is not None:
