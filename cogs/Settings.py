@@ -15,14 +15,14 @@ class Settings(commands.Cog):
     async def setup(self, ctx: commands.Context, specific_command: str = None, set_to: str = None):
         if specific_command is not None and set_to is not None:
             # Set the server's data to the specific command that was passed
-            if GuildData.edit_guild_settings(ctx.guild, {  specific_command: set_to }) == 0:
+            if GuildData.edit_guild_settings(ctx.guild, { specific_command: set_to }) == False:
                 # Invalid Key set
                 embed_obj = create_embed("Invalid Arguments", f"The argument that you passed was invalid.\n\nValid Keys:")
                 for key, value in GuildData.get_valid_keys().items():
                     embed_obj.add_field(name=f"** ❯ {key.replace('_', ' ').capitalize()} **", value=f"Key: `{key}`\tType: `{value}`", inline=True)
                 await ctx.send(embed=embed_obj)
             else:
-                await ctx.send(embed=create_embed("Success", f"The key {specific_command} was set to {set_to}"))
+                await ctx.send(embed=create_embed("Success", f"The key `{specific_command}` was set to `{set_to}`"))
         else:
             embed_obj = create_embed("Invalid Arguments", f"Please pass two arguments to this command: (`command_to_set`, `value_to_set_to`).\n\n```Valid Keys:```")
             for key, value in GuildData.get_valid_keys().items():
