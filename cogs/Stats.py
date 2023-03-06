@@ -65,7 +65,6 @@ class Stats(commands.Cog):
             embed = create_embed(
                 "Server Status",
                 f"""Members: `{guild.member_count}`
-                https://discord.gg/ZCvcu36
                 ID: {guild.id}\n
                 **Server Time**""",
             )
