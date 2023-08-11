@@ -86,7 +86,7 @@ async def on_raw_reaction_remove(ctx: commands.Context):
 
 # @param attach_array: The array with the file attachments
 async def convert_to_file(attach_array: list):
-    attachments: list = [] # array containingn attachments
+    attachments: list = [] # array containing attachments
 
     for x in attach_array: # Loop through attachments parameter
         file = await x.to_file() # Convert To File
