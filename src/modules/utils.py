@@ -10,6 +10,7 @@ import json
 maincolor = 0x000
 avatar_url = "https://cdn.discordapp.com/avatars/730171191632986234/beda4acd239d66c261541edad187e95e.webp?size=1024"
 
+
 def print_options():
     print("1. Settings")
     print("2. Run")
@@ -24,12 +25,14 @@ def print_settings():
 
 def get_fact():
     page = requests.get("https://uselessfacts.jsph.pl/random.html?language=en")
-    tree = html.fromstring(page.content)
-    fact_elem = tree.xpath("/html/body/div/div[2]/div/blockquote")[0]
-    fact_regex = re.compile("^[\s\t]+")
-    result = re.sub(fact_regex, "", fact_elem.text)
+    json_fact = page.json()
+    # tree = html.fromstring(page.content)
+    # fact_elem = tree.xpath("/html/body/div/div[2]/div/blockquote")[0]
+    # fact_regex = re.compile("^[\s\t]+")
+    # result = re.sub(fact_regex, "", fact_elem.text)
+    result = json_fact["text"]
 
-    return result if result is not None else 'Error getting data'
+    return result if result is not None else "Error getting data"
 
 
 def create_embed(title, description=None):
@@ -37,7 +40,7 @@ def create_embed(title, description=None):
         title=title,
         description=description,
         colour=maincolor,
-        timestamp=datetime.datetime.now()
+        timestamp=datetime.datetime.now(),
     )
     embed.set_footer(text="Spyder", icon_url=avatar_url)  # , icon_url=client_array[0].user.avatar_url
     return embed

@@ -3,5 +3,5 @@
 __pycache__
 venv
 .env
-data/user_data/
-data/guild_data/
+user_data/
+guild_data/
