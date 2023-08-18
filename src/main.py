@@ -11,17 +11,16 @@ import asyncio
 import os
 
 import discord
-from discord.ext import commands  # We import commands and tasks from discord ext
+from discord.ext import \
+    commands  # We import commands and tasks from discord ext
 from dotenv import load_dotenv
 
 # Run __init__ method for Guild Data is ran in the json_handler class
 from modules.data_handler import GuildData
+from modules.help import Help
 from modules.utils import create_embed
 
-from modules.help import Help
-
-intents = discord.Intents.all()  # Declare Intents
-load_dotenv()  # Take enviornment variables from .env file
+load_dotenv()  # Take environment variables from .env file
 
 #     _____  _  _               _
 #    /  __ \| |(_)             | |

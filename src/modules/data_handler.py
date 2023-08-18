@@ -9,6 +9,7 @@ valid_guild_keys: dict = {
     "role_messages": [
         # Role message id
     ],
+    "moderation_logs": [],
     "stats_channel_id": 0,
     "stats_message_id": 0,
     "fact_channel_id": 0,
@@ -105,10 +106,13 @@ class GuildData:
                         return False
                         # Error in Value Type
                 elif type(valid_guild_keys[key]) == list:
-                    try:
-                        local_data[key].append(value)
-                    except AttributeError:
-                        local_data[key] = [value]
+                    if type(value) == list:
+                        local_data[key] = value
+                    else:
+                        try:
+                            local_data[key].append(value)
+                        except AttributeError:
+                            local_data[key] = [value]
                 else:
                     local_data[key] = value
             else:

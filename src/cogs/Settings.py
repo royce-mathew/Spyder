@@ -11,9 +11,9 @@ class Settings(commands.Cog):
         self.client = client
 
     @commands.hybrid_command(
-        name="setup",
+        name="set",
         with_app_command=True,
-        description="Setup the current server for the bot",
+        description="Set the current server for the bot",
         aliases=["set"],
     )
     @commands.has_permissions(administrator=True)

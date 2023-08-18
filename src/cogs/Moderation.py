@@ -2,6 +2,7 @@ import asyncio
 from modules.utils import create_embed
 import discord
 from discord.ext import commands
+from discord import app_commands
 from modules.data_handler import UserData, GuildData
 import random
 
@@ -19,9 +20,12 @@ class Moderation(commands.Cog):
     def __init__(self, client: discord.Client):
         self.client = client
 
-    @commands.command(name="Mute", description="Mute a user")
+    @commands.hybrid_command(description="Mute a user")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
+    @app_commands.describe(
+        member="The guild member to mute",
+    )
     # member: discord.Member = None basically checks if the member has type discord.Member, if not then let it be None
     async def mute(self, ctx: commands.Context, member: discord.Member = None):
         # If member has the default value
@@ -30,6 +34,15 @@ class Moderation(commands.Cog):
             return
 
         role = discord.utils.get(member.guild.roles, name="Muted")
+        if role := None:  # Role is not found | role does not exist
+            await ctx.send(
+                embed=create_embed(
+                    "Error",
+                    "Muted role was not found. Please create a Role called `Muted` and assign it the permissions you want.",
+                )
+            )
+            return
+
         await member.add_roles(role)
         await ctx.send(
             embed=create_embed(
@@ -54,9 +67,12 @@ class Moderation(commands.Cog):
             )
         )
 
-    @commands.command(name="Unmute", description="Unmute a user")
+    @commands.hybrid_command(description="Unmute a user")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
+    @app_commands.describe(
+        member="The guild member to unmute",
+    )
     async def unmute(self, ctx: commands.Context, member: discord.Member = None):
         if member is None:
             await ctx.send(embed=create_embed("Error", "User was not passed"))
@@ -87,15 +103,18 @@ class Moderation(commands.Cog):
             )
         )
 
-    @commands.command(name="Nick", description="Give user nickname", aliases=["nickname", "rename"])
+    @commands.hybrid_command(name="nick", description="Give user nickname", aliases=["nickname", "rename"])
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
+    @app_commands.describe(
+        member="The guild member to rename",
+        new_nickname="The new nickname to give the user",
+    )
     async def nick(
         self,
         ctx: commands.Context,
         member: discord.Member = None,
-        # Default value for nickname
-        new_nickname=f"User_{random.randrange(1000, 100000)}",
+        new_nickname=f"User_{random.randrange(1000, 100000)}",  # Default value for nickname
     ):
         if member is None:
             await ctx.send(embed=create_embed("Error", "Member / Nickname was not passed"))
@@ -108,7 +127,15 @@ class Moderation(commands.Cog):
                 f"User `{member.name}` was renamed to `{new_nickname}` by `{ctx.message.author.display_name}`",
             )
         )
-
+        
+        moderation_string: str = f"User `{member.display_name}` was nicked by by `{ctx.message.author.display_name}`"
+        
+        # Add it to moderation logs
+        GuildData.edit_guild_settings(ctx.guild, {"moderation_logs": {
+            "type": "moderation"
+                                                                      "data": moderation_string,
+                                                                      }})
+        
         log_channel_id = GuildData.get_value_default(ctx.guild, "moderation_logs_channel_id", None)
         if log_channel_id is None:
             if (log_channel := discord.utils.get(ctx.guild.text_channels, name="modlogs")) is None:
@@ -121,13 +148,33 @@ class Moderation(commands.Cog):
         await log_channel.send(
             embed=create_embed(
                 "Set Nickname",
-                f"User `{member.display_name}` was nicked by by `{ctx.message.author.display_name}`",
+                moderation_string,
             )
         )
 
-    @commands.command(
-        name="Register",
-        description="Register for using commands that store data",
+    @commands.hybrid_command(description="Ban a user")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @app_commands.describe(
+        member="The guild member to ban",
+        reason="The reason for the ban",
+        delete_message_days="The number of days to delete messages for",
+    )
+    async def ban(
+        self,
+        ctx: commands.Context,
+        member: discord.Member = None,
+        reason: str = "No reason provided",
+        delete_message_days: int = 0,
+    ):
+        author: discord.Message.author = ctx.message.author
+        if member is None:
+            await ctx.send(embed=create_embed("Error", "User was not passed"))
+            return
+    
+
+    @commands.hybrid_command(
+        description="Register inside the Bot's Database to use commands that store data",
         aliases=["verify"],
     )
     @commands.guild_only()
