@@ -117,19 +117,10 @@ class Bot(commands.Bot):
         """
         if message.bot == True:
             return  # Return if the message author is a bot
-        log_channel_id = GuildData.get_value_default(
-            message.guild, "chatlogs_channel_id", None
-        )  # Get chatlog ID in database
-        if log_channel_id is None:
-            return  # Could try to set it so if a chat-logs channel exist here then use that channel
-
-        log_channel = message.guild.get_channel(int(log_channel_id))
-        if log_channel is None:  # Channel got deleted?
-            return
 
         embed = create_embed(
             "Message Deleted:",
-            f"User `{message.author.display_name}`'s deleted their message",
+            f"User `{message.author.name}`'s deleted their message",
         )
 
         content = f"```{message.content if message.content else 'None'}```"
@@ -138,7 +129,7 @@ class Bot(commands.Bot):
 
         # Convert attachments to file
         files = await convert_to_file(message.attachments)
-        await log_channel.send(embed=embed, files=files)
+        await GuildData.send_chat_log_message(message.guild, embed, files)
 
     async def on_message_edit(before: discord.Message, after: discord.Message):
         """
@@ -150,15 +141,7 @@ class Bot(commands.Bot):
         if before.bot == True:
             return
 
-        log_channel_id = GuildData.get_value_default(before.guild, "chatlogs_channel_id", None)
-        if log_channel_id is None:
-            return
-
-        log_channel = before.guild.get_channel(int(log_channel_id))
-        if log_channel is None:
-            return
-
-        embed = create_embed("Message Edited", f"User `{before.author.display_name}` edited their message")
+        embed = create_embed("Message Edited", f"User `{before.author.name}` edited their message")
 
         before_message = f"```{before.content if before.content else 'None'}```"
         after_message = f"```{after.content if after.content else 'None'}```"
@@ -168,7 +151,7 @@ class Bot(commands.Bot):
         embed.add_field(name="Channel", value=f"`{before.channel.name}`")
 
         files = await convert_to_file(before.attachments)
-        await log_channel.send(embed=embed, files=files)
+        await GuildData.send_chat_log_message(before.guild, embed, files)
 
 
 # Create a client

@@ -34,38 +34,34 @@ class Moderation(commands.Cog):
             return
 
         role = discord.utils.get(member.guild.roles, name="Muted")
-        if role := None:  # Role is not found | role does not exist
+        if role is None:  # Role is not found | role does not exist
             await ctx.send(
                 embed=create_embed(
                     "Error",
-                    "Muted role was not found. Please create a Role called `Muted` and assign it the permissions you want.",
+                    "Muted role was not found. Please run the `/set mute` command or create a Role called `Muted` and assign it the permissions you want.",
                 )
             )
             return
 
+        moderation_string = f"User `{member.name}` was muted by `{ctx.message.author.name}`"
+        moderation_embed = create_embed(
+            "Muted",
+            moderation_string,
+        )
         await member.add_roles(role)
-        await ctx.send(
-            embed=create_embed(
-                "Muted",
-                f"User `{member.display_name}` was muted by `{ctx.message.author.display_name}`",
-            )
+        GuildData.edit_guild_settings(
+            ctx.guild,
+            {
+                "moderation_logs": {
+                    "type": "moderation",
+                    "data": moderation_string,
+                    "author": ctx.message.author.id,
+                    "target": member.id,
+                }
+            },
         )
-
-        log_channel_id = GuildData.get_value_default(ctx.guild, "moderation_logs_channel_id", None)
-        if log_channel_id is None:
-            if (log_channel := discord.utils.get(ctx.guild.text_channels, name="modlogs")) is None:
-                return
-        else:
-            log_channel = ctx.guild.get_channel(int(log_channel_id))
-            if log_channel is None:
-                return
-
-        await log_channel.send(
-            embed=create_embed(
-                "Muted",
-                f"User `{member.display_name}` was muted by `{ctx.message.author.display_name}`",
-            )
-        )
+        await ctx.send(embed=moderation_embed)
+        await GuildData.send_log_message(ctx.guild, moderation_embed)
 
     @commands.hybrid_command(description="Unmute a user")
     @commands.guild_only()
@@ -80,28 +76,24 @@ class Moderation(commands.Cog):
 
         role = discord.utils.get(member.guild.roles, name="Muted")
         await member.remove_roles(role)
-        await ctx.send(
-            embed=create_embed(
-                "Unmuted",
-                f"User `{member.display_name}` was unmuted by `{ctx.message.author.display_name}`",
-            )
+        moderation_string = f"User `{member.name}` was unmuted by `{ctx.message.author.name}`"
+        moderation_embed = create_embed(
+            "Unmuted",
+            moderation_string,
         )
-
-        log_channel_id = GuildData.get_value_default(ctx.guild, "moderation_logs_channel_id", None)
-        if log_channel_id is None:
-            if (log_channel := discord.utils.get(ctx.guild.text_channels, name="modlogs")) is None:
-                return
-        else:
-            log_channel = ctx.guild.get_channel(int(log_channel_id))
-            if log_channel is None:
-                return
-
-        await log_channel.send(
-            embed=create_embed(
-                "Unmuted",
-                f"User `{member.display_name}` was unmuted by `{ctx.message.author.display_name}`",
-            )
+        GuildData.edit_guild_settings(
+            ctx.guild,
+            {
+                "moderation_logs": {
+                    "type": "moderation",
+                    "data": moderation_string,
+                    "author": ctx.message.author.id,
+                    "target": member.id,
+                }
+            },
         )
+        await ctx.send(embed=moderation_embed)
+        await GuildData.send_log_message(ctx.guild, moderation_embed)
 
     @commands.hybrid_command(name="nick", description="Give user nickname", aliases=["nickname", "rename"])
     @commands.guild_only()
@@ -120,15 +112,15 @@ class Moderation(commands.Cog):
             await ctx.send(embed=create_embed("Error", "Member / Nickname was not passed"))
             return
 
-        await member.edit(nick=new_nickname)
-        await ctx.send(
-            embed=create_embed(
-                "Set Nickname",
-                f"User `{member.name}` was renamed to `{new_nickname}` by `{ctx.message.author.display_name}`",
-            )
+        moderation_string: str = (
+            f"User `{member.name}` was renamed to `{new_nickname}` by `{ctx.message.author.name}`",
         )
-
-        moderation_string: str = f"User `{member.display_name}` was nicked by by `{ctx.message.author.display_name}`"
+        moderation_embed = create_embed(
+            "Set Nickname",
+            moderation_string,
+        )
+        await member.edit(nick=new_nickname)
+        await ctx.send(embed=moderation_embed)
 
         # Add it to moderation logs
         GuildData.edit_guild_settings(
@@ -137,25 +129,13 @@ class Moderation(commands.Cog):
                 "moderation_logs": {
                     "type": "moderation",
                     "data": moderation_string,
+                    "author": ctx.message.author.id,
+                    "target": member.id,
                 }
             },
         )
 
-        log_channel_id = GuildData.get_value_default(ctx.guild, "moderation_logs_channel_id", None)
-        if log_channel_id is None:
-            if (log_channel := discord.utils.get(ctx.guild.text_channels, name="modlogs")) is None:
-                return
-        else:
-            log_channel = ctx.guild.get_channel(int(log_channel_id))
-            if log_channel is None:
-                return
-
-        await log_channel.send(
-            embed=create_embed(
-                "Set Nickname",
-                moderation_string,
-            )
-        )
+        await GuildData.send_log_message(ctx.guild, moderation_embed)
 
     @commands.hybrid_command(description="Ban a user")
     @commands.guild_only()
@@ -175,6 +155,33 @@ class Moderation(commands.Cog):
         author: discord.Message.author = ctx.message.author
         if member is None:
             await ctx.send(embed=create_embed("Error", "User was not passed"))
+            return
+
+    @commands.hybrid_command(
+        description="See the moderation logs for this server / user if specified", aliases=["modlogs"]
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    @app_commands.describe(member="The guild member to see the moderation logs for")
+    async def logs(
+        self,
+        ctx: commands.Context,
+        member: discord.Member = None,
+    ):
+        if member:
+            guild_data = GuildData.get_guild_data_from_id(ctx.guild.id)
+            current_logs = []
+            for mod_log in guild_data["moderation_logs"]:
+                if mod_log["target"] == member.id:
+                    current_logs.append(mod_log["data"])
+
+            await ctx.send(
+                embed=create_embed(
+                    "Moderation Logs",
+                    f"{len(current_logs)} Moderation Logs for {member.name}\n- " + "\n- ".join(current_logs),
+                )
+            )
+
             return
 
     @commands.hybrid_command(
@@ -283,17 +290,7 @@ class Moderation(commands.Cog):
             print(f"Verified {name}")
 
         ctx.command.reset_cooldown(ctx)
-
-        log_channel_id = GuildData.get_value_default(ctx.guild, "moderation_logs_channel_id", None)
-        if log_channel_id is None:
-            if (log_channel := discord.utils.get(ctx.guild.text_channels, name="modlogs")) is None:
-                return
-        else:
-            log_channel = ctx.guild.get_channel(int(log_channel_id))
-            if log_channel is None:
-                return
-
-        await log_channel.send(embed=create_embed("Verified", f"User `{member.display_name}` was Verified"))
+        GuildData.send_log_message(ctx.guild, create_embed("Verified", f"User `{member.name}` was Verified"))
 
 
 async def setup(client: discord.Client):

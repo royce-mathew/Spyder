@@ -10,14 +10,15 @@ class Settings(commands.Cog):
     def __init__(self, client: discord.Client):
         self.client = client
 
-    @commands.hybrid_command(
+    @commands.hybrid_group(
         name="set",
         with_app_command=True,
         description="Set the current server for the bot",
-        aliases=["set"],
+        aliases=["set_value"],
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator=True)
-    async def setup(self, ctx: commands.Context, specific_command: str = None, set_to: str = None):
+    async def server_set(self, ctx: commands.Context, specific_command: str = None, set_to: str = None):
         if specific_command is not None and set_to is not None:
             # Set the server's data to the specific command that was passed
             if GuildData.edit_guild_settings(ctx.guild, {specific_command: set_to}) == False:
@@ -49,6 +50,27 @@ class Settings(commands.Cog):
 
             await ctx.send(embed=embed_obj)
 
+    @server_set.command(name="prefix", description="Set the prefix for the current guild")
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def prefix(self, ctx: commands.Context, new_prefix: str = None):
+        if new_prefix is None:
+            await ctx.send(embed=create_embed("Invalid Parameter", "Please supply this command with a `prefix`"))
+            return
+
+        if len(new_prefix) != 1 or new_prefix not in valid_prefixes:
+            await ctx.send(embed=create_embed("Invalid Prefix", f"The valid prefixes are: `{valid_prefixes}`"))
+            return
+
+        GuildData.edit_guild_settings(ctx.guild, {"prefix": new_prefix})
+        await ctx.send(embed=create_embed("Success", f"Successfully set the prefix to `{new_prefix}`"))
+
+    @server_set.command(name="mute", description="Create a muted role for the current guild")
+    @commands.has_permissions(administrator=True)
+    async def mute_role(self, ctx: commands.Context):
+        await ctx.guild.create_role(name="Muted", permissions=discord.Permissions(send_messages=False))
+        await ctx.send(embed=create_embed("Success", f"Successfully created Muted Role"))
+
     @commands.hybrid_command(
         name="settings",
         with_app_command=True,
@@ -72,23 +94,6 @@ class Settings(commands.Cog):
             )
 
         await ctx.send(embed=embed_obj)
-
-    @commands.hybrid_command(
-        name="prefix",
-        with_app_command=True,
-        description="Sets the prefix for the current guild",
-    )
-    async def prefix(self, ctx: commands.Context, new_prefix: str = None):
-        if new_prefix is None:
-            await ctx.send(embed=create_embed("Invalid Parameter", "Please supply this command with a `prefix`"))
-            return
-
-        if len(new_prefix) != 1 or new_prefix not in valid_prefixes:
-            await ctx.send(embed=create_embed("Invalid Prefix", f"The valid prefixes are: `{valid_prefixes}`"))
-            return
-
-        GuildData.edit_guild_settings(ctx.guild, {"prefix": new_prefix})
-        await ctx.send(embed=create_embed("Success", f"Successfully set the prefix to `{new_prefix}`"))
 
     @commands.hybrid_command(with_app_command=True, description="Sync App Commands With Guild")
     @commands.has_permissions(administrator=True)
