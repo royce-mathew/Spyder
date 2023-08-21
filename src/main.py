@@ -11,8 +11,7 @@ import asyncio
 import os
 
 import discord
-from discord.ext import \
-    commands  # We import commands and tasks from discord ext
+from discord.ext import commands  # We import commands and tasks from discord ext
 from dotenv import load_dotenv
 
 # Run __init__ method for Guild Data is ran in the json_handler class

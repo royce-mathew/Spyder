@@ -127,15 +127,20 @@ class Moderation(commands.Cog):
                 f"User `{member.name}` was renamed to `{new_nickname}` by `{ctx.message.author.display_name}`",
             )
         )
-        
+
         moderation_string: str = f"User `{member.display_name}` was nicked by by `{ctx.message.author.display_name}`"
-        
+
         # Add it to moderation logs
-        GuildData.edit_guild_settings(ctx.guild, {"moderation_logs": {
-            "type": "moderation"
-                                                                      "data": moderation_string,
-                                                                      }})
-        
+        GuildData.edit_guild_settings(
+            ctx.guild,
+            {
+                "moderation_logs": {
+                    "type": "moderation",
+                    "data": moderation_string,
+                }
+            },
+        )
+
         log_channel_id = GuildData.get_value_default(ctx.guild, "moderation_logs_channel_id", None)
         if log_channel_id is None:
             if (log_channel := discord.utils.get(ctx.guild.text_channels, name="modlogs")) is None:
@@ -171,7 +176,6 @@ class Moderation(commands.Cog):
         if member is None:
             await ctx.send(embed=create_embed("Error", "User was not passed"))
             return
-    
 
     @commands.hybrid_command(
         description="Register inside the Bot's Database to use commands that store data",
