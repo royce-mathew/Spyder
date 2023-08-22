@@ -1,7 +1,7 @@
 # This python file will automatically install all needed files for you
+import os
 import subprocess
 import sys
-import os
 
 running_in_virtualenv = "VIRTUAL_ENV" in os.environ
 
@@ -24,9 +24,7 @@ def main():
     subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
 
     print("\n\nSetting Discord Token:")
-    should_create = input(
-        "\tWould you like to create your own .env file? n/Y: "
-    )  # Get input on whether to automatically create .env file
+    should_create = input("\tWould you like to create your own .env file? n/Y: ")  # Get input on whether to automatically create .env file
 
     if should_create.lower() == "n":
         token = input("\tEnter Discord App Token: ")
