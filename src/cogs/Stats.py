@@ -80,9 +80,7 @@ class Stats(commands.Cog):
             # Guild Checks
             if (current_guild_settings := GuildData.get_guild_data(guild_obj=guild)) is None:
                 continue
-            if (
-                stats_channel_id := current_guild_settings["stats_channel_id"]
-            ) == 0:  # Skip this guild if stats_channel was not filled
+            if (stats_channel_id := current_guild_settings["stats_channel_id"]) == 0:  # Skip this guild if stats_channel was not filled
                 continue
             if (stats_message_id := current_guild_settings["stats_message_id"]) == 0:
                 continue

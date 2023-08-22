@@ -101,9 +101,7 @@ class Music(commands.Cog):
             return
 
         try:  # Check bot's current voice channel
-            if (
-                guild_data["voice_client"].is_playing() and guild_data["voice_channel"] != channel
-            ):  # If its already playing music not in the same channel
+            if guild_data["voice_client"].is_playing() and guild_data["voice_channel"] != channel:  # If its already playing music not in the same channel
                 # If the author's channel is not the bot's channel
                 await ctx.send(
                     embed=create_embed(
@@ -174,9 +172,7 @@ class Music(commands.Cog):
                 await ctx.send(embed=create_embed("Paused song"))
                 voice.pause()
             elif voice.is_paused():
-                await ctx.send(
-                    embed=create_embed("Music is already paused. Run the `resume` command to start playing the music!")
-                )
+                await ctx.send(embed=create_embed("Music is already paused. Run the `resume` command to start playing the music!"))
             else:
                 await ctx.send(embed=create_embed("Currently no audio is playing."))
         except (KeyError, AttributeError) as Err:
@@ -291,9 +287,7 @@ class Music(commands.Cog):
                     if guild_list["currently_playing"] is not None and guild_list["looped"] == False:
                         guild_list["currently_playing"] = None
 
-                    if (
-                        len(guild_list["queue"]) > 0 and guild_list["currently_playing"] is None
-                    ):  # if there are music objects in queue
+                    if len(guild_list["queue"]) > 0 and guild_list["currently_playing"] is None:  # if there are music objects in queue
                         music_data = guild_list["queue"][0]
                         await self.connect_to_voice(await self.client.fetch_guild(guild_id), guild_list)
                         voice_client.play(discord.FFmpegPCMAudio(music_data["audio_url"], **ffmpeg_options))

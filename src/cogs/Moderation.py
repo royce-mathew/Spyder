@@ -112,9 +112,7 @@ class Moderation(commands.Cog):
             await ctx.send(embed=create_embed("Error", "Member / Nickname was not passed"))
             return
 
-        moderation_string: str = (
-            f"User `{member.name}` was renamed to `{new_nickname}` by `{ctx.message.author.name}`",
-        )
+        moderation_string: str = (f"User `{member.name}` was renamed to `{new_nickname}` by `{ctx.message.author.name}`",)
         moderation_embed = create_embed(
             "Set Nickname",
             moderation_string,
@@ -157,9 +155,7 @@ class Moderation(commands.Cog):
             await ctx.send(embed=create_embed("Error", "User was not passed"))
             return
 
-    @commands.hybrid_command(
-        description="See the moderation logs for this server / user if specified", aliases=["modlogs"]
-    )
+    @commands.hybrid_command(description="See the moderation logs for this server / user if specified", aliases=["modlogs"])
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     @app_commands.describe(member="The guild member to see the moderation logs for")
@@ -193,9 +189,7 @@ class Moderation(commands.Cog):
     async def register(self, ctx: commands.Context):
         author: discord.Message.author = ctx.message.author  # Message Author
         user_id: str = str(author.id)  # Author ID converted to String
-        role: discord.Role = discord.utils.find(
-            lambda r: r.name == "Verified", ctx.guild.roles
-        )  # Find verified role in the Guild
+        role: discord.Role = discord.utils.find(lambda r: r.name == "Verified", ctx.guild.roles)  # Find verified role in the Guild
 
         # Check if user already has role
         if (local_data := UserData.get_user_data(user_id)) is not None:
@@ -206,9 +200,7 @@ class Moderation(commands.Cog):
                     return
 
         # Send initial message
-        bot_message: discord.Message = await ctx.send(
-            embed=create_embed("Registration Process", "This process may take a while.")
-        )
+        bot_message: discord.Message = await ctx.send(embed=create_embed("Registration Process", "This process may take a while."))
         await asyncio.sleep(0.5)  # Wait 2 seconds
 
         # Name Prompt
@@ -219,9 +211,7 @@ class Moderation(commands.Cog):
             )
         )
         try:
-            client_response: discord.Message = await self.client.wait_for(
-                "message", check=check(author), timeout=30
-            )  # Wait for client input
+            client_response: discord.Message = await self.client.wait_for("message", check=check(author), timeout=30)  # Wait for client input
         except asyncio.exceptions.TimeoutError:
             await bot_message.edit(
                 embed=create_embed(
@@ -254,9 +244,7 @@ class Moderation(commands.Cog):
                 )
             )
             try:
-                client_response: discord.Message = await self.client.wait_for(
-                    "message", check=check(author), timeout=30
-                )
+                client_response: discord.Message = await self.client.wait_for("message", check=check(author), timeout=30)
             except asyncio.exceptions.TimeoutError:
                 await bot_message.edit(
                     embed=create_embed(

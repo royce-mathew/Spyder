@@ -70,23 +70,17 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print("Bot is online")
         # Set presence
-        await client.change_presence(
-            activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers")
-        )
+        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers"))
 
         async for guild in client.fetch_guilds():  # Loop through guilds
             GuildData.initialize_guild(guild)  # Initialize Temp Guild Data
 
     async def on_guild_join(self, ctx: commands.Context):
-        await client.change_presence(
-            activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers")
-        )
+        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers"))
         GuildData.initialize_guild(ctx.guild)  # Initialize New Guild Data
 
     async def on_guild_remove(ctx: commands.Context):
-        await client.change_presence(
-            activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers")
-        )
+        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers"))
         GuildData.delete_guild(ctx.guild)
 
     # On reaction Event
