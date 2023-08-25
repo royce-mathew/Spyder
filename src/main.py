@@ -153,58 +153,6 @@ client = Bot()
 
 
 #
-#     _____                                                 _
-#    /  __ \                                               | |
-#    | /  \/  ___   _ __ ___   _ __ ___    __ _  _ __    __| | ___
-#    | |     / _ \ | '_ ` _ \ | '_ ` _ \  / _` || '_ \  / _` |/ __|
-#    | \__/\| (_) || | | | | || | | | | || (_| || | | || (_| |\__ ]
-#     \____/ \___/ |_| |_| |_||_| |_| |_| \__,_||_| |_| \__,_||___/
-#
-
-
-# Load Command : Loads the Cog Specified
-@client.hybrid_command(name="load", with_app_command=True, description="Loads a command")
-@commands.is_owner()
-async def load(ctx: commands.Context, extension: str):
-    await client.load_extension(f"cogs.{extension}")  # Load the file
-    embed = create_embed("Loaded", f"Command `{extension}` has been loaded.")  # Create and send embed
-    await ctx.send(embed)
-    print(f"Loaded {extension}")  # Print and tell the console that the command was loaded
-
-
-# Unload Command: Unloads the Cog specified
-@client.hybrid_command(name="unload", with_app_command=True, description="Unloads a command")
-@commands.is_owner()
-async def unload(ctx: commands.Context, extension: str):  # Unload Method
-    await client.unload_extension(f"cogs.{extension}")  # Unload the file
-    embed = create_embed("Unloaded", f"Command `{extension}` has been unloaded.")
-    await ctx.send(embed=embed)
-    print(f"Unloaded {extension}")  # Tell the console that the command was unloaded
-
-
-# Reload Command: Reloads the Cog Specified
-@client.hybrid_command(name="reload", with_app_command=True, description="Reloads a command")
-@commands.is_owner()
-async def reload(ctx: commands.Context, extension: str):
-    await client.reload_extension(f"cogs.{extension}")  # Reload the file
-    embed = create_embed("Reloaded", f"Command `{extension}` has been reloaded.")
-    await ctx.send(embed=embed)
-    print(f"Reloaded {extension}")
-
-
-@client.hybrid_command(name="sync", with_app_command=True, description="Sync App Commands Globally")
-@commands.is_owner()
-async def sync(ctx: commands.Context):
-    try:
-        client.tree.copy_global_to()
-        synced = await client.tree.sync()
-        await ctx.reply(embed=create_embed("Synced", f"Synced {len(synced)} command(s)"))
-        print(f"Synced {len(synced)} command(s)")
-    except Exception as e:
-        await ctx.reply(embed=create_embed("Unable to Sync", f"```{e}```"))
-
-
-#
 #     _____                       _                        _
 #    /  __ \                     | |                      | |
 #    | /  \/  ___    __ _        | |      ___    __ _   __| |  ___  _ __
@@ -231,9 +179,9 @@ async def main():
 
         await client.start(os.getenv("DISCORD_TOKEN"))  # Start the client
 
-
-try:
-    asyncio.run(main())
-except KeyboardInterrupt:
-    asyncio.run(client.close())
-    print("Closed Program")
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        asyncio.run(client.close())
+        print("Closed Program")

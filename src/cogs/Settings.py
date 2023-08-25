@@ -19,6 +19,7 @@ class Settings(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def server_set(self, ctx: commands.Context, specific_command: str = None, set_to: str = None):
+        """Set a setting value for a key for the current guild"""
         if specific_command is not None and set_to is not None:
             # Set the server's data to the specific command that was passed
             if GuildData.edit_guild_settings(ctx.guild, {specific_command: set_to}) == False:
@@ -54,6 +55,7 @@ class Settings(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def prefix(self, ctx: commands.Context, new_prefix: str = None):
+        """Set the prefix for the current guild"""
         if new_prefix is None:
             await ctx.send(embed=create_embed("Invalid Parameter", "Please supply this command with a `prefix`"))
             return
@@ -68,6 +70,7 @@ class Settings(commands.Cog):
     @server_set.command(name="mute", description="Create a muted role for the current guild")
     @commands.has_permissions(administrator=True)
     async def mute_role(self, ctx: commands.Context):
+        """Create a mute role for the current guild"""
         await ctx.guild.create_role(name="Muted", permissions=discord.Permissions(send_messages=False))
         await ctx.send(embed=create_embed("Success", f"Successfully created Muted Role"))
 
@@ -78,6 +81,7 @@ class Settings(commands.Cog):
     )
     @commands.has_permissions(administrator=True)
     async def settings(self, ctx: commands.Context):
+        """Prints out the settings of the current guild"""
         embed_obj = create_embed(
             "Settings",
             f"These are the following settings for this guild. To change the settings for your server, use the `setup` command.",
@@ -98,10 +102,55 @@ class Settings(commands.Cog):
     @commands.hybrid_command(with_app_command=True, description="Sync App Commands With Guild")
     @commands.has_permissions(administrator=True)
     async def sync_local(self, ctx: commands.Context):
+        """Sync the commands locally to a guild"""
         try:
             self.client.tree.copy_global_to(guild=ctx.guild)
             synced = await self.client.tree.sync(guild=ctx.guild)
             await ctx.reply(embed=create_embed("Synced", f"Synced {len(synced)} command(s)"))
+        except Exception as e:
+            await ctx.reply(embed=create_embed("Unable to Sync", f"```{e}```"))
+            
+    # Load Command : Loads the Cog Specified
+    @commands.hybrid_command(name="load", with_app_command=True, description="Loads a command")
+    @commands.is_owner()
+    async def load(self, ctx: commands.Context, extension: str):
+        """Load a Cog"""
+        await self.client.load_extension(f"cogs.{extension}")  # Load the file
+        embed = create_embed("Loaded", f"Command `{extension}` has been loaded.")  # Create and send embed
+        await ctx.send(embed)
+        print(f"Loaded {extension}")  # Print and tell the console that the command was loaded
+
+
+    # Unload Command: Unloads the Cog specified
+    @commands.hybrid_command(name="unload", with_app_command=True, description="Unloads a command")
+    @commands.is_owner()
+    async def unload(self, ctx: commands.Context, extension: str):  # Unload Method
+        """Unload a Cog"""
+        await self.client.unload_extension(f"cogs.{extension}")  # Unload the file
+        embed = create_embed("Unloaded", f"Command `{extension}` has been unloaded.")
+        await ctx.send(embed=embed)
+        print(f"Unloaded {extension}")  # Tell the console that the command was unloaded
+
+
+    # Reload Command: Reloads the Cog Specified
+    @commands.hybrid_command(name="reload", with_app_command=True, description="Reloads a command")
+    @commands.is_owner()
+    async def reload(self, ctx: commands.Context, extension: str):
+        """Reload a Cog"""
+        await self.client.reload_extension(f"cogs.{extension}")  # Reload the file
+        embed = create_embed("Reloaded", f"Command `{extension}` has been reloaded.")
+        await ctx.send(embed=embed)
+        print(f"Reloaded {extension}")
+
+
+    @commands.hybrid_command(name="sync", with_app_command=True, description="Sync App Commands Globally")
+    @commands.is_owner()
+    async def sync(self, ctx: commands.Context):
+        """Sync the commands globally"""
+        try:
+            synced = await self.client.tree.sync(guild=None)
+            await ctx.reply(embed=create_embed("Synced", f"Synced {len(synced)} command(s)"))
+            print(f"Synced {len(synced)} command(s)")
         except Exception as e:
             await ctx.reply(embed=create_embed("Unable to Sync", f"```{e}```"))
 
