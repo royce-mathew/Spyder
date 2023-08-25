@@ -70,24 +70,24 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print("Bot is online")
         # Set presence
-        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers"))
+        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(self.guilds)} servers"))
 
-        async for guild in client.fetch_guilds():  # Loop through guilds
+        async for guild in self.fetch_guilds():  # Loop through guilds
             GuildData.initialize_guild(guild)  # Initialize Temp Guild Data
 
     async def on_guild_join(self, ctx: commands.Context):
-        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers"))
+        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(self.guilds)} servers"))
         GuildData.initialize_guild(ctx.guild)  # Initialize New Guild Data
 
     async def on_guild_remove(ctx: commands.Context):
-        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.guilds)} servers"))
+        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(self.guilds)} servers"))
         GuildData.delete_guild(ctx.guild)
 
     # On reaction Event
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         role_messages = GuildData.get_value(payload.guild_id, "role_messages")  # Get the Guild's role messages
         if payload.message_id in role_messages:
-            guild = discord.utils.find(lambda g: g.id == payload.guild_id, client.guilds)
+            guild = discord.utils.find(lambda g: g.id == payload.guild_id, self.guilds)
             role = discord.utils.find(lambda r: r.name == payload.emoji.name, guild.roles)
             if role is not None:
                 await payload.member.add_roles(role, reason="Spyder Reaction Roles")
