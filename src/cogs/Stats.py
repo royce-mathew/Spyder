@@ -76,7 +76,7 @@ class Stats(commands.Cog):
         nb_time = (source.astimezone(timezone("Canada/Eastern")) + datetime.timedelta(hours=1)).strftime("%I:%M %p")
 
         # Get the message with message id
-        async for guild in self.client.fetch_guilds(limit=None, with_counts=False):
+        async for guild in self.client.fetch_guilds(limit=None):
             # Guild Checks
             if (current_guild_settings := GuildData.get_guild_data(guild_obj=guild)) is None:
                 continue
