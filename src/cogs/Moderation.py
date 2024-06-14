@@ -185,19 +185,19 @@ class Moderation(commands.Cog):
         aliases=["verify"],
     )
     @commands.guild_only()
-    @commands.cooldown(1, 1000, commands.BucketType.user)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def register(self, ctx: commands.Context):
         author: discord.Message.author = ctx.message.author  # Message Author
         user_id: str = str(author.id)  # Author ID converted to String
         role: discord.Role = discord.utils.find(lambda r: r.name == "Verified", ctx.guild.roles)  # Find verified role in the Guild
-
+        local_data = UserData.get_user_data(user_id)  # Get User Data
         # Check if user already has role
-        if (local_data := UserData.get_user_data(user_id)) is not None:
-            if (name := local_data.get("name", None)) is not None and name != "":
-                if role in author.roles:
-                    await ctx.send(embed=create_embed("Registered", "You are already registered"))
-                    ctx.command.reset_cooldown(ctx)
-                    return
+        if (name := local_data.get("name", None)) is not None and name != "":
+            if role in author.roles:
+                await ctx.send(embed=create_embed("Registered", "You are already registered"))
+                ctx.command.reset_cooldown(ctx)
+                return
+            
 
         # Send initial message
         bot_message: discord.Message = await ctx.send(embed=create_embed("Registration Process", "This process may take a while."))

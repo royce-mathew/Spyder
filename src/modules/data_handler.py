@@ -54,7 +54,10 @@ class UserData:
 
     def get_user_data(user_id: str) -> dict:
         user_id_bytes = user_id.encode()
-        return UserData.get_user_data_raw(user_id_bytes)
+        try:
+            return UserData.get_user_data_raw(user_id_bytes)
+        except UserNotInitalized:
+            return {}
 
     def set_user_data(user_id: str, key: str, value) -> None:
         user_id_bytes = user_id.encode()
