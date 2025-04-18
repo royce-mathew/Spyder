@@ -23,4 +23,4 @@
   [LevelDB](https://github.com/google/leveldb)
 
 # Documentation
-Complete Documentation for the Bot can be found [here](https://royce-mathew.com/projects/spyder)
+Complete Documentation for the Bot can be found [here](https://r0yce.com/projects/spyder)
